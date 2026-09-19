@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "id": "81c4aa35-ee7f-438c-a7ca-9c4507a67499",
+      "originalArtistName": "Placebo",
+      "title": "The Bitter End",
+      "progressPercentage": 0,
+      "fragments": []
+    },
+    {
+      "id": "3c53a12b-8417-4f3d-90bb-e9dca25efc5f",
+      "originalArtistName": "Placebo",
+      "title": "Every Me Every You",
+      "progressPercentage": 0,
+      "fragments": []
+    },
+    {
+      "id": "0aea3a2f-7844-422a-b1f8-6ccd0219f8c4",
+      "originalArtistName": "Placebo",
+      "title": "Special Needs",
+      "progressPercentage": 50,
+      "fragments": []
+    },
+    {
+      "id": "9c117513-90f7-4b0d-9543-8fe999ba7ae7",
+      "originalArtistName": "Placebo",
+      "title": "This Picture",
+      "progressPercentage": 30,
+      "fragments": [
+        {
+          "text": "Для твоего кейса (трекер прогресса) я бы советовал вариант 2: пусть Use Case сам проверяет существование и управляет контекстом ошибки. Тогда порт можно оставить максимально простым, а логику «не удалось обновить, потому что нет такой песни» держать в Use Case — там она ближе к пользовательскому сценарию.",
+          "isDone": true
+        },
+        {
+          "text": "bar",
+          "isDone": true
+        },
+        {
+          "text": "baz",
+          "isDone": true
+        }
+      ]
+    }
+  ]
+}
