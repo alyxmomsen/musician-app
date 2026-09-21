@@ -1,79 +1,74 @@
 import {
     TrackedItemTextFragment,
-    TTrackedItemTextFragmentDTO,
+    TTrackedItemTextFragmentState,
 } from './tracked-item-fragment';
 
-export type TTrackedItemDTO = {
-    originalArtistName: string;
+export interface FragmentsCompletionSummary {
+    total: number;
+    completed: number;
+}
+
+export type TTrackedItemState = {
+    id: string;
+    artistName: string;
     title: string;
-    progressPercentage: number;
-    fragments: TTrackedItemTextFragmentDTO[];
+    fragments: TTrackedItemTextFragmentState[];
 };
 
-export type TTrackedItemDTOWithId = { id: string } & TTrackedItemDTO;
-
-export type TTrackItemUniqueId = string;
+export type TTrackedItemUniqueId = string;
 
 export class TrackedItem {
     constructor(
         readonly id: string,
         private originalArtistName: string,
         private title: string,
-        private progressPercentage: number = 0,
         private fragments: TrackedItemTextFragment[] = []
     ) {}
 
-    incrementProgress(amount: number) {
-        if (this.progressPercentage + amount > 100) {
-            this.progressPercentage = 100.0;
-            return;
-        }
-
-        this.progressPercentage += amount;
-    }
-
-    decrementProgress(amount: number) {
-        if (this.progressPercentage - amount < 0) {
-            this.progressPercentage = 0;
-            return;
-        }
-
-        this.progressPercentage -= amount;
-    }
-
-    setTitle(title: string) {
+    setTitle(title: string): void {
         this.title = title;
     }
 
-    getTitle() {
+    getTitle(): string {
         return this.title;
     }
 
-    getArtistName() {
+    getArtistName(): string {
         return this.originalArtistName;
     }
 
-    getProgress() {
-        return this.progressPercentage;
-    }
-
-    getDTO(): TTrackedItemDTOWithId {
-        return {
-            id: this.id,
-            originalArtistName: this.getArtistName(),
-            title: this.getTitle(),
-            progressPercentage: this.getProgress(),
-            fragments: this.fragments.map((f) => f.getDTO()),
-        };
-    }
-
-    getFragments(): TrackedItemTextFragment[] {
+    getFragments(): readonly TrackedItemTextFragment[] {
         return this.fragments;
+    }
+
+    getFragmentsCompletionSummary(): FragmentsCompletionSummary {
+        let total = 0;
+        let completed = 0;
+        this.fragments.forEach(fr => {
+            total++;
+            if (fr.isCompleted()) completed++;
+        });
+        return { total, completed };
+    }
+
+    calculateProgress(): number {
+        const { total, completed } = this.getFragmentsCompletionSummary();
+        return total > 0 ? (completed / total) * 100 : 0;
     }
 
     setFragmentDone(index: number, done: boolean): void {
         const fragment = this.fragments[index];
         if (!fragment) throw new Error(`Fragment ${index} not found`);
-        done ? fragment.done() : fragment.unDone();
+        if (done) fragment.done();
+        else fragment.unDone();
+    }
+
+    getState(): TTrackedItemState {
+        return {
+            id: this.id,
+            artistName: this.originalArtistName,
+            title: this.title,
+            fragments: this.fragments.map(f => f.getState()),
+        };
     }
 }

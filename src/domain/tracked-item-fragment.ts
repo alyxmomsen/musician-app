@@ -1,4 +1,4 @@
-export type TTrackedItemTextFragmentDTO = {
+export type TTrackedItemTextFragmentState = {
     text: string;
     isDone: boolean;
 };
@@ -12,7 +12,7 @@ export class TrackedItemTextFragment {
     getText(): string {
         return this.text;
     }
-    
+
     isCompleted(): boolean {
         return this.isDone;
     }
@@ -20,11 +20,12 @@ export class TrackedItemTextFragment {
     done(): void {
         this.isDone = true;
     }
+
     unDone(): void {
         this.isDone = false;
     }
 
-    getDTO(): TTrackedItemTextFragmentDTO {
+    getState(): TTrackedItemTextFragmentState {
         return { text: this.text, isDone: this.isDone };
     }
 }

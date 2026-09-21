@@ -1,12 +1,16 @@
-import { TrackedItem, TTrackedItemDTO, TTrackedItemDTOWithId, TTrackItemUniqueId } from '../tracked-item';
+import {
+    TrackedItem,
+    TTrackedItemState,
+    TTrackedItemUniqueId,
+} from '../tracked-item';
 
-export interface ITrackedItemListRepo {
+export interface ITrackedItemsListRepo {
     init(): Promise<void>;
-    addMany(items: TTrackedItemDTO[]): Promise<void>;
-    updateOne(item: TTrackedItemDTOWithId): Promise<void>;
-    removeOne(id: TTrackItemUniqueId): Promise<void>;
+    addMany(items: Omit<TTrackedItemState, 'id'>[]): Promise<void>;
+    updateOne(item: TrackedItem): Promise<void>;
+    removeOne(id: TTrackedItemUniqueId): Promise<void>;
     findByArtistName(artistName: string): Promise<TrackedItem[]>;
     getAll(): Promise<TrackedItem[]>;
-    getById(id: TTrackItemUniqueId): Promise<TrackedItem | null>;
+    getById(id: TTrackedItemUniqueId): Promise<TrackedItem | null>;
     getRandom(): Promise<TrackedItem | null>;
 }
