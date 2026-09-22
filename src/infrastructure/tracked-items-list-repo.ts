@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { resolve, normalize } from 'path';
 import { IUniqueIdGenerator } from '../domain/ports/uniqueIdGenerator';
-import { ITrackedItemsListRepo } from '../domain/ports/set-list-repo';
+import { ITrackedItemsListRepo } from '../domain/ports/tracked-items-list-repo';
 import {
     TrackedItem,
     TTrackedItemState,
@@ -47,6 +47,14 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
             this.items.set(id, { ...item, id });
         }
         await this.persist();
+    }
+
+    async create(item: Omit<TTrackedItemState, 'id'>): Promise<TrackedItem> {
+        const id = this.uniqueIdGenerator.generate();
+        const state: TTrackedItemState = { id, ...item };
+        this.items.set(id, state);
+        await this.persist();
+        return this.mapToDomain(state);
     }
 
     async updateOne(item: TrackedItem): Promise<void> {

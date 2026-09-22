@@ -2,7 +2,7 @@ import { MainOrchestrator } from '../application/main-orchestrator';
 import { ToggleFragmentUseCase } from '../application/use-cases/toggle-fragment-use-case';
 import { TrackedItemsListRepo } from '../infrastructure/tracked-items-list-repo';
 import { UniqueIdGenerator } from '../infrastructure/unique-id-generator';
-import { TrackedItemsListController } from '../presentation/controllers/set-list.controller';
+import { TrackedItemsListController } from '../presentation/controllers/tracked-items-list.controller';
 
 export interface AppConfig {
     dataPath: string;

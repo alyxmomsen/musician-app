@@ -1,4 +1,4 @@
-import { ITrackedItemsListRepo } from "../../domain/ports/set-list-repo";
+import { ITrackedItemsListRepo } from "../../domain/ports/tracked-items-list-repo";
 import { TrackedItem } from "../../domain/tracked-item";
 
 export class ToggleFragmentUseCase {

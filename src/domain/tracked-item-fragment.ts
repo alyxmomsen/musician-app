@@ -25,6 +25,10 @@ export class TrackedItemTextFragment {
         this.isDone = false;
     }
 
+    setText(text: string): void {
+        this.text = text;
+    }
+
     getState(): TTrackedItemTextFragmentState {
         return { text: this.text, isDone: this.isDone };
     }

@@ -3,7 +3,7 @@ import { createApp } from './infrastructure/express/app';
 import { Loop } from './infrastructure/loop';
 
 const appConfig: AppConfig = {
-    dataPath: './src/set-list.json',
+    dataPath: './src/tracked-items.json',
 };
 
 const bootstrapFactory = function (
