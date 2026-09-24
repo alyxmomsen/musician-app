@@ -13,6 +13,7 @@ export function createTrackedItemsListRouter(
     router.post('/:id/fragments', controller.addFragment);
     router.delete('/:id/fragments/:fragmentIndex', controller.removeFragment);
     router.patch('/:id/fragments/:fragmentIndex', controller.toggleFragment);
+    router.delete('/:id', controller.remove);
 
     return router;
 }

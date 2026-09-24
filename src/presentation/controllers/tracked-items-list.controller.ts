@@ -253,4 +253,17 @@ export class TrackedItemsListController {
             next(err);
         }
     };
+
+    remove = async (
+        req: Request<IdParams>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            await this.orchestrator.delete(req.params.id);
+            res.status(204).send();
+        } catch (err) {
+            next(err);
+        }
+    };
 }

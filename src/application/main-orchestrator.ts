@@ -81,4 +81,8 @@ export class MainOrchestrator {
     ): Promise<TrackedItem | null> {
         return this.toggleFragmentUseCase.toggle(id, fragmentIndex, done);
     }
+
+    async delete(id: string): Promise<void> {
+        await this.itemsListRepo.removeOne(id);
+    }
 }
