@@ -7,10 +7,11 @@ import {
     TTrackedItemState,
     TTrackedItemUniqueId,
 } from '../domain/tracked-item';
-import { TrackedItemTextFragment } from '../domain/tracked-item-fragment';
+import { FragmentList } from '../domain/fragment-list';
+import { TWithId } from '../domain/types/common/with-id';
 
 export class TrackedItemsListRepo implements ITrackedItemsListRepo {
-    private items: Map<TTrackedItemUniqueId, TTrackedItemState> = new Map();
+    private items: Map<TTrackedItemUniqueId, TWithId<TTrackedItemState>> = new Map();
     private readonly path: string;
 
     constructor(
@@ -23,7 +24,7 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
     async init(): Promise<void> {
         try {
             const raw = await readFile(this.path, 'utf-8');
-            const setList = JSON.parse(raw) as { items: TTrackedItemState[] };
+            const setList = JSON.parse(raw) as { items: TWithId<TTrackedItemState>[] };
             setList.items.forEach((item) => {
                 this.items.set(item.id, item);
             });
@@ -41,7 +42,7 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
         await writeFile(this.path, serialized, 'utf-8');
     }
 
-    async addMany(items: Omit<TTrackedItemState, 'id'>[]): Promise<void> {
+    async addMany(items: TTrackedItemState[]): Promise<void> {
         for (const item of items) {
             const id = this.uniqueIdGenerator.generate();
             this.items.set(id, { ...item, id });
@@ -51,7 +52,7 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
 
     async create(item: Omit<TTrackedItemState, 'id'>): Promise<TrackedItem> {
         const id = this.uniqueIdGenerator.generate();
-        const state: TTrackedItemState = { id, ...item };
+        const state: TWithId<TTrackedItemState> = { ...item, id };
         this.items.set(id, state);
         await this.persist();
         return this.mapToDomain(state);
@@ -61,7 +62,7 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
         if (!this.items.has(item.id)) {
             throw new Error(`Item with id ${item.id} not found`);
         }
-        this.items.set(item.id, item.getState());
+        this.items.set(item.id, { ...item.getState(), id: item.id });
         await this.persist();
     }
 
@@ -92,14 +93,12 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
         return this.mapToDomain(arr[Math.floor(Math.random() * arr.length)]);
     }
 
-    private mapToDomain(state: TTrackedItemState): TrackedItem {
+    private mapToDomain(state: TWithId<TTrackedItemState>): TrackedItem {
         return new TrackedItem(
             state.id,
             state.artistName,
             state.title,
-            state.fragments.map(
-                (f) => new TrackedItemTextFragment(f.text, f.isDone)
-            )
+            FragmentList.fromState(state.fragments)
         );
     }
 }

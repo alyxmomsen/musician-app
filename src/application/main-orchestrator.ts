@@ -1,5 +1,6 @@
-import { TrackedItem } from '../domain/tracked-item';
+import { TrackedItem, TTrackedItemState } from '../domain/tracked-item';
 import { ITrackedItemsListRepo } from '../domain/ports/tracked-items-list-repo';
+import { FragmentList } from '../domain/fragment-list';
 import { ToggleFragmentUseCase } from './use-cases/toggle-fragment-use-case';
 
 export class MainOrchestrator {
@@ -28,15 +29,15 @@ export class MainOrchestrator {
         title: string,
         text: string
     ): Promise<TrackedItem> {
-        const fragments = TrackedItem
-            .fragmentsFromText(text)
-            .map((f) => f.getState());
+        const fragments = FragmentList.fromText(text);
 
-        return this.itemsListRepo.create({
+        const stateWithoutId: Omit<TTrackedItemState, 'id'> = {
             artistName,
             title,
-            fragments,
-        });
+            fragments: fragments.getState(),
+        };
+
+        return this.itemsListRepo.create(stateWithoutId);
     }
 
     async update(
@@ -84,5 +85,29 @@ export class MainOrchestrator {
 
     async delete(id: string): Promise<void> {
         await this.itemsListRepo.removeOne(id);
+    }
+
+    async markFragmentReviewed(
+        id: string,
+        index: number,
+        timestamp: number
+    ): Promise<TrackedItem | null> {
+        const item = await this.itemsListRepo.getById(id);
+        if (!item) return null;
+        item.markFragmentReviewed(index, timestamp);
+        await this.itemsListRepo.updateOne(item);
+        return item;
+    }
+
+    async renameFragmentTitle(
+        id: string,
+        index: number,
+        title: string
+    ): Promise<TrackedItem | null> {
+        const item = await this.itemsListRepo.getById(id);
+        if (!item) return null;
+        item.renameFragmentTitle(index, title);
+        await this.itemsListRepo.updateOne(item);
+        return item;
     }
 }

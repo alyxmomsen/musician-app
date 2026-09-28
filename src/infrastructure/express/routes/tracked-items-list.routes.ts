@@ -14,6 +14,8 @@ export function createTrackedItemsListRouter(
     router.delete('/:id/fragments/:fragmentIndex', controller.removeFragment);
     router.patch('/:id/fragments/:fragmentIndex', controller.toggleFragment);
     router.delete('/:id', controller.remove);
+    router.patch('/:id/fragments/:fragmentIndex/review', controller.markFragmentReviewed);
+    router.patch('/:id/fragments/:fragmentIndex/title', controller.renameFragmentTitle);
 
     return router;
 }

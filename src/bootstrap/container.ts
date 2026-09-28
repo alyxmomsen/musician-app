@@ -30,26 +30,46 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     const existing = await setListRepo.getAll();
     if (existing.length === 0) {
         await setListRepo.addMany([
-            { artistName: 'Placebo', title: 'The Bitter End', fragments: [] },
-            { artistName: 'Placebo', title: 'Every Me Every You', fragments: [] },
-            { artistName: 'Placebo', title: 'Special Needs', fragments: [] },
+    {
+        artistName: 'Placebo',
+        title: 'The Bitter End',
+        fragments: [],
+    },
+    {
+        artistName: 'Placebo',
+        title: 'Every Me Every You',
+        fragments: [],
+    },
+    {
+        artistName: 'Placebo',
+        title: 'Special Needs',
+        fragments: [],
+    },
+    {
+        artistName: 'Placebo',
+        title: 'This Picture',
+        fragments: [
             {
-                artistName: 'Placebo',
-                title: 'This Picture',
-                fragments: [
-                    { text: `Farewell the ashtray girl
-Forbidden snowflake
-Beware this troubled world
-Watch out for earthquakes
-Goodbye to open sores
-To broken semaphore
-You know we miss her
-We miss her picture`, isDone: false },
-                    { text: 'bar', isDone: false },
-                    { text: 'baz', isDone: false },
-                ],
+                text: 'Farewell the ashtray girl',
+                title: '',
+                isDone: false,
+                lastReviewedAt: null,
             },
-        ]);
+            {
+                text: 'Forbidden snowflake',
+                title: '',
+                isDone: false,
+                lastReviewedAt: null,
+            },
+            {
+                text: 'Beware this troubled world',
+                title: '',
+                isDone: false,
+                lastReviewedAt: null,
+            },
+        ],
+    },
+]);
     }
 
     return { setListRepo, setListController };

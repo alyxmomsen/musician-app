@@ -1,15 +1,10 @@
+import { FragmentList, FragmentsCompletionSummary } from './fragment-list';
 import {
     TrackedItemTextFragment,
     TTrackedItemTextFragmentState,
 } from './tracked-item-fragment';
 
-export interface FragmentsCompletionSummary {
-    total: number;
-    completed: number;
-}
-
 export type TTrackedItemState = {
-    id: string;
     artistName: string;
     title: string;
     fragments: TTrackedItemTextFragmentState[];
@@ -19,91 +14,91 @@ export type TTrackedItemUniqueId = string;
 
 export class TrackedItem {
     constructor(
-        readonly id: string,
-        private originalArtistName: string,
+        readonly id: TTrackedItemUniqueId,
+        private artistName: string,
         private title: string,
-        private fragments: TrackedItemTextFragment[] = []
+        private fragments: FragmentList = new FragmentList()
     ) {}
 
-    static fragmentsFromText(text: string): TrackedItemTextFragment[] {
-        return text
-            .split('\n')
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0)
-            .map((line) => new TrackedItemTextFragment(line, false));
-    }
+    // ---------- Метаданные ----------
 
-    setTitle(title: string): void {
-        this.title = title;
+    getArtistName(): string {
+        return this.artistName;
     }
 
     getTitle(): string {
         return this.title;
     }
 
-    getArtistName(): string {
-        return this.originalArtistName;
+    setArtistName(artistName: string): void {
+        this.artistName = artistName;
     }
 
-    getFragments(): readonly TrackedItemTextFragment[] {
-        return this.fragments;
-    }
-
-    getFragmentsCompletionSummary(): FragmentsCompletionSummary {
-        let total = 0;
-        let completed = 0;
-        this.fragments.forEach((fr) => {
-            total++;
-            if (fr.isCompleted()) completed++;
-        });
-        return { total, completed };
-    }
-
-    calculateProgress(): number {
-        const { total, completed } = this.getFragmentsCompletionSummary();
-        return total > 0 ? (completed / total) * 100 : 0;
-    }
-
-    rename(artistName: string, title: string): void {
-        this.originalArtistName = artistName;
+    setTitle(title: string): void {
         this.title = title;
     }
 
-    addFragment(text: string, position: number): void {
-        const fragment = new TrackedItemTextFragment(text, false);
-        if (position >= this.fragments.length) {
-            this.fragments.push(fragment);
-        } else {
-            this.fragments.splice(position, 0, fragment);
-        }
+    rename(artistName: string, title: string): void {
+        this.artistName = artistName;
+        this.title = title;
+    }
+
+    // ---------- Фрагменты ----------
+
+    getFragments(): readonly TrackedItemTextFragment[] {
+        return this.fragments.getAll();
+    }
+
+    addFragment(text: string, position?: number): void {
+        this.fragments.add(text, position);
     }
 
     removeFragment(index: number): void {
-        if (index < 0 || index >= this.fragments.length) {
-            throw new Error(`Fragment ${index} not found`);
-        }
-        this.fragments.splice(index, 1);
+        this.fragments.remove(index);
     }
 
     updateFragmentText(index: number, text: string): void {
-        const fragment = this.fragments[index];
-        if (!fragment) throw new Error(`Fragment ${index} not found`);
-        fragment.setText(text);
+        this.fragments.updateText(index, text);
     }
 
     setFragmentDone(index: number, done: boolean): void {
-        const fragment = this.fragments[index];
-        if (!fragment) throw new Error(`Fragment ${index} not found`);
-        if (done) fragment.done();
-        else fragment.unDone();
+        this.fragments.setDone(index, done);
     }
+
+    splitFragment(index: number, separator: string = '\n'): void {
+        this.fragments.splitFragmentBySeparator(index, separator);
+    }
+
+    mergeFragments(indexA: number, indexB: number, separator: string = '\n'): void {
+        this.fragments.merge(indexA, indexB, separator);
+    }
+
+    // ---------- Прогресс ----------
+
+    getFragmentsCompletionSummary(): FragmentsCompletionSummary {
+        return this.fragments.getCompletionSummary();
+    }
+
+    calculateProgress(): number {
+        const { total, completed } = this.fragments.getCompletionSummary();
+        return total > 0 ? (completed / total) * 100 : 0;
+    }
+
+    // ---------- Сериализация ----------
 
     getState(): TTrackedItemState {
         return {
-            id: this.id,
-            artistName: this.originalArtistName,
+            artistName: this.artistName,
             title: this.title,
-            fragments: this.fragments.map((f) => f.getState()),
+            fragments: this.fragments.getState(),
         };
+    }
+
+    markFragmentReviewed(index: number, timestamp: number): void {
+        this.fragments.markReviewed(index, timestamp);
+    }
+
+    renameFragmentTitle(index: number, title: string): void {
+        this.fragments.renameTitle(index, title);
     }
 }

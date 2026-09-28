@@ -266,4 +266,71 @@ export class TrackedItemsListController {
             next(err);
         }
     };
+
+    markFragmentReviewed = async (
+        req: Request<FragmentParams>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id, fragmentIndex } = req.params;
+            const index = Number(fragmentIndex);
+
+            if (!Number.isInteger(index) || index < 0) {
+                return res.status(400).json({
+                    error: 'fragmentIndex must be a non-negative integer',
+                });
+            }
+
+            const updated = await this.orchestrator.markFragmentReviewed(
+                id,
+                index,
+                Date.now()
+            );
+            if (!updated) return res.status(404).json({ error: 'Item not found' });
+
+            res.json({
+                ...updated.getState(),
+                progress: updated.calculateProgress(),
+            });
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    renameFragmentTitle = async (
+        req: Request<FragmentParams>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id, fragmentIndex } = req.params;
+            const { title } = req.body as { title?: string };
+            const index = Number(fragmentIndex);
+
+            if (!Number.isInteger(index) || index < 0) {
+                return res.status(400).json({
+                    error: 'fragmentIndex must be a non-negative integer',
+                });
+            }
+            if (typeof title !== 'string') {
+                return res.status(400).json({ error: 'title must be a string' });
+            }
+
+            const updated = await this.orchestrator.renameFragmentTitle(
+                id,
+                index,
+                title
+            );
+            if (!updated) return res.status(404).json({ error: 'Item not found' });
+
+            res.json({
+                ...updated.getState(),
+                progress: updated.calculateProgress(),
+            });
+        } catch (err) {
+            next(err);
+        }
+    };
+
 }
