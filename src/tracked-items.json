@@ -2,159 +2,245 @@
   "items": [
     {
       "artistName": "Placebo",
-      "title": "The Bitter End e",
-      "fragments": [
-        {
-          "text": "фрагмент",
-          "title": "",
-          "isDone": true,
-          "lastReviewedAt": null
-        }
-      ],
-      "id": "57da0bd7-a1d4-4e71-a501-22e4e2f03f76"
-    },
-    {
-      "artistName": "Placebo",
-      "title": "Every Me Every You",
-      "fragments": [],
-      "id": "04718d7a-92fc-4ad7-82ec-d94687e86558"
-    },
-    {
-      "artistName": "Placebo",
       "title": "Special Needs",
       "fragments": [
         {
-          "text": "fragment txt",
+          "text": "Remember me when you're the one who's silver screened\nRemember me when you're the one you always dreamed\nRemember me whenever noses start to bleed\nRemember me, special needs",
+          "title": "verse 1",
+          "isDone": true,
+          "lastReviewedAt": 1790695496564
+        },
+        {
+          "text": "Just nineteen, a sucker's dream\nI guess I thought you had the flavour\nJust nineteen, a dream obscene\nWith six months off for bad behaviour",
+          "title": "chorus",
+          "isDone": true,
+          "lastReviewedAt": 1793010876668
+        },
+        {
+          "text": "Remember me when you clinch your movie deal\nAnd think of me, stuck in my chair that has four wheels\nRemember me through flash photography and screams\nRemember me, special dreams",
+          "title": "verse 2",
+          "isDone": true,
+          "lastReviewedAt": 1793014914263
+        },
+        {
+          "text": "Just nineteen, a sucker's dream\nI guess I thought you had the flavour\nJust nineteen, a dream obscene\nWith six months off for bad behaviour\nJust nineteen, a sucker's dream\nI guess I thought you had the flavour\nJust nineteen, a dream obscene\nWith six months off for bad behaviour",
+          "title": "chorus (finally)",
+          "isDone": true,
+          "lastReviewedAt": 1793014910954
+        }
+      ],
+      "id": "ebda059d-2495-4bed-96c2-6f50b83c3f8e"
+    },
+    {
+      "artistName": "Арсений Тарковский",
+      "title": "Вот и лето прошло....",
+      "fragments": [
+        {
+          "text": "Вот и лето прошло,\nСловно и не бывало.\nНа пригреве тепло.\nТолько этого мало.",
+          "title": "1",
+          "isDone": true,
+          "lastReviewedAt": 1790696003659
+        },
+        {
+          "text": "Все, что сбыться могло,\nМне, как лист пятипалый,\nПрямо в руки легло,\nТолько этого мало.",
+          "title": "2",
+          "isDone": true,
+          "lastReviewedAt": 1790696005053
+        },
+        {
+          "text": "Понапрасну ни зло,\nНи добро не пропало,\nВсе горело светло,\nТолько этого мало.",
+          "title": "3",
+          "isDone": true,
+          "lastReviewedAt": 1790696007777
+        },
+        {
+          "text": "Жизнь брала под крыло,\nБерегла и спасала,\nМне и вправду везло.\nТолько этого мало.",
+          "title": "4",
+          "isDone": true,
+          "lastReviewedAt": 1790696009346
+        },
+        {
+          "text": "Листьев не обожгло,\nВеток не обломало...\nДень промыт, как стекло,\nТолько этого мало.",
+          "title": "5",
+          "isDone": true,
+          "lastReviewedAt": 1790696011161
+        }
+      ],
+      "id": "8efd69d3-bf59-461e-9eab-c0a24f946d7d"
+    },
+    {
+      "artistName": "Бродский",
+      "title": "Я Вас любил...",
+      "fragments": [
+        {
+          "text": "Я вас любил. Любовь ещё (возможно,\nчто просто боль) сверлит мои мозги,\nВсё разлетелось к чёрту на куски.\nЯ застрелиться пробовал, но сложно\nс оружием. И далее, виски:\nв который вдарить? Портила не дрожь, но\nзадумчивость. Чёрт! всё не по-людски!",
+          "title": "1",
+          "isDone": true,
+          "lastReviewedAt": 1793014951050
+        },
+        {
+          "text": "Я Вас любил так сильно, безнадежно,\nкак дай вам Бог другими — — — но не даст!\nОн, будучи на многое горазд,\nне сотворит — по Пармениду — дважды\nсей жар в крови, ширококостный хруст,\nчтоб пломбы в пасти плавились от жажды\nкоснуться — «бюст» зачеркиваю — уст!",
+          "title": "2",
+          "isDone": true,
+          "lastReviewedAt": null
+        }
+      ],
+      "id": "dcf033d2-75e1-4799-8ec6-0cfbba2c6407"
+    },
+    {
+      "artistName": "Manson",
+      "title": "Coma White",
+      "fragments": [
+        {
+          "text": "There's something cold and blank\nBehind her smile\nShe's standing on an overpass\nIn her miracle mile",
+          "title": "verse 1",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "'Cause you were from a perfect world\nA world that threw me away, today, today\nToday, to run away",
+          "title": "pre chorus",
+          "isDone": false,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "A pill to make you numb\nA pill to make you dumb\nA pill to make you anybody else\nBut all the drugs in this world\nWon't save her from herself",
+          "title": "chorus",
+          "isDone": false,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Her mouth was an empty cut\nAnd she was waiting to fall\nJust bleeding like a polaroid\nThat lost all her dolls",
+          "title": "verse 2",
+          "isDone": false,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "You were from a perfect world\nA world that threw me away, today, today\nToday, to run away",
+          "title": "pre chorus 2",
+          "isDone": false,
+          "lastReviewedAt": null
+        }
+      ],
+      "id": "80e494d9-5dca-4978-b3db-0976eeb223ac"
+    },
+    {
+      "artistName": "Lady Gaga",
+      "title": "Paparazzi",
+      "fragments": [
+        {
+          "text": "We are the crowd, we're c-comin' out\nGot my flash on, it's true\nNeed that picture of you, it's so magical\nWe'd be so fantastico\nLeather and jeans, garage glamorous\nNot sure what it means\nBut this photo of us, it don't have a price\nReady for those flashing lights\n'Cause you know that, baby, I",
+          "title": "verse 1",
+          "isDone": true,
+          "lastReviewedAt": 1790752170344
+        },
+        {
+          "text": "I'm your biggest fan, I'll follow you until you love me\nPapa-paparazzi\nBaby, there's no other superstar, you know that I'll be\nYour papa-paparazzi\nPromise I'll be kind\nBut I won't stop until that boy is mine (Yeah-ha)\nBaby, you'll be famous, chase you down until you love me\nPapa-paparazzi",
+          "title": "chorus 1",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "I'll be your girl backstage at your show\nVelvet ropes and guitars\nYeah, 'cause you're my rockstar in between the sets\nEyeliner and cigarettes\nShadow is burnt, yellow, dance and we turn\nMy lashes are dry\nPurple teardrops I cry, it don't have a price\nLoving you is cherry pie\n'Cause you know that, baby, I",
+          "title": "verse 2",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Real good, we dance in the studio\nSnap, snap to that shit on the radio\nDon't stop for anyone\nWe're plastic, but we still have fun",
+          "title": "bridge",
+          "isDone": true,
+          "lastReviewedAt": null
+        }
+      ],
+      "id": "b6d6a4d9-1ad2-4d89-9a30-59163dc6f503"
+    },
+    {
+      "artistName": "Бродский",
+      "title": "Я Вас любил...",
+      "fragments": [
+        {
+          "text": "Я вас любил. Любовь ещё (возможно,\nчто просто боль) сверлит мои мозги,\nВсё разлетелось к чёрту на куски.\nЯ застрелиться пробовал, но сложно\nс оружием. И далее, виски:\nв который вдарить? Портила не дрожь, но\nзадумчивость. Чёрт! всё не по-людски!",
+          "title": "",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Я Вас любил так сильно, безнадежно,\nкак дай вам Бог другими — — — но не даст!\nОн, будучи на многое горазд,\nне сотворит — по Пармениду — дважды\nсей жар в крови, ширококостный хруст,\nчтоб пломбы в пасти плавились от жажды\nкоснуться — «бюст» зачеркиваю — уст!",
           "title": "",
           "isDone": true,
           "lastReviewedAt": null
         }
       ],
-      "id": "d8ed5d93-9072-419e-9490-0b90fe0b2baa"
+      "id": "c9753456-dce8-4417-aedb-e72f6e42afb7"
     },
     {
-      "artistName": "Placebo",
-      "title": "This Picture",
+      "artistName": "Высоцкий",
+      "title": "Люблю тебя сейчас...",
       "fragments": [
         {
-          "text": "Farewell the ashtray girl",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "Forbidden snowflake",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "Beware this troubled world",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        }
-      ],
-      "id": "126d90aa-a41f-4f1d-865a-a433cfcf61a8"
-    },
-    {
-      "artistName": "Placebo",
-      "title": "This is the new Shit",
-      "fragments": [
-        {
-          "text": "go",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "back",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "black",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "white",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "and",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "go out",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        }
-      ],
-      "id": "477d627f-4968-4cb1-b1b8-66e24ff257d6"
-    },
-    {
-      "artistName": "Placebo",
-      "title": "This is the new Shit",
-      "fragments": [
-        {
-          "text": "back",
+          "text": "Люблю тебя сейчас, не тайно,- на показ!\nНе после и не до, в лучах твоих сгорая.\nНавзрыд или смеясь, но я люблю сейчас.\nА в прошлом- не хочу, а в будущем- не знаю",
           "title": "",
           "isDone": true,
           "lastReviewedAt": null
         },
         {
-          "text": "and",
+          "text": "В прошедшем, \"я любил\", печальнее могил,\nВсе нежное во мне бескрылит и стреножит.\nХотя, поэт поэтов говорил,- \n\"я Вас любил, любовь еще, быть может...\".",
           "title": "",
           "isDone": true,
           "lastReviewedAt": null
         },
         {
-          "text": "go out",
+          "text": "Так говорят о брошенном, отцветшем.\nИ в этом жалость есть и снисходительность,\nКак к свергнутому с трона королю.\nЕсть в этом сожаленье об ушедшем.\nСтремление где утеряна стремительность\nИ как-бы недоверие к \"я люблю\"",
+          "title": "",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Люблю тебя **теперь**, без пятен, без потерь.\nМой век стоит сейчас, я вен не перережу,\nВо время, в продолжение, **теперь**.\nЯ прошлым не дышу и будущим не брежу.",
+          "title": "",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Приду и вброд и вплавь к тебе, хоть обезглавь,\nС цепями на ногах и гирями по пуду.\nТы только, по ошибке не заставь\nЧто б после \"я люблю\" добавил я \"и буду\"!",
+          "title": "",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Есть горечь в этом \"буду\", как ни странно, \nПодделанная подпись, червоточина.\nИ лаз для отступления, про запас.\nБесцветный яд на самом дне стакана.\nИ словно настоящему пощечина, \nСомнение в том что я люблю **сейчас**.",
+          "title": "",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Смотрю \"французский сон\", с обилием времен,\nГде в будущем не так, и в прошлом по-другому.\nК позорному столбу я пригвожден.\nК барьеру вызван я, языковому.",
+          "title": "",
+          "isDone": true,
+          "lastReviewedAt": null
+        },
+        {
+          "text": "Ах, разность в языках, не положение- крах!\nНо, выход мы вдвоем поищем и обрящем.\nЛюблю тебя и в разных временах,- \nИ в будущем, и в прошлом настоящем!",
           "title": "",
           "isDone": true,
           "lastReviewedAt": null
         }
       ],
-      "id": "d37720cd-8fb5-425c-9a05-345757988d0b"
+      "id": "e5a65799-8839-4d5b-b566-c0db36a1aaf9"
     },
     {
-      "artistName": "placebo",
-      "title": "special",
+      "artistName": "Тарковский",
+      "title": "Вот и лето прошло...",
       "fragments": [
         {
-          "text": "hello",
-          "title": "Куплет 1",
-          "isDone": false,
-          "lastReviewedAt": 1790594600877
-        },
-        {
-          "text": "world",
+          "text": "Вот и лето прошло, словно и небывало\nНа пригреве тепло, только этого мало.\nВсе что сбыться могло, мне, как лист пятипалый,\nПрямо в руки легло, только этого мало.",
           "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "mother",
-          "title": "",
-          "isDone": false,
-          "lastReviewedAt": null
-        },
-        {
-          "text": "fucker",
-          "title": "",
-          "isDone": false,
+          "isDone": true,
           "lastReviewedAt": null
         }
       ],
-      "id": "bf1d06ac-97ec-4866-9496-2a39729905ec"
+      "id": "f9ff71f1-b051-4979-b1dc-b30d5b46701d"
     }
   ]
 }

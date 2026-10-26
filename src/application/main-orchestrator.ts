@@ -1,7 +1,7 @@
 import { TrackedItem, TTrackedItemState } from '../domain/tracked-item';
 import { ITrackedItemsListRepo } from '../domain/ports/tracked-items-list-repo';
-import { FragmentList } from '../domain/fragment-list';
 import { ToggleFragmentUseCase } from './use-cases/toggle-fragment-use-case';
+import { TTrackedItemTextFragmentState } from '../domain/tracked-item-fragment';
 
 export class MainOrchestrator {
     constructor(
@@ -27,14 +27,12 @@ export class MainOrchestrator {
     async create(
         artistName: string,
         title: string,
-        text: string
+        fragments: TTrackedItemTextFragmentState[]
     ): Promise<TrackedItem> {
-        const fragments = FragmentList.fromText(text);
-
         const stateWithoutId: Omit<TTrackedItemState, 'id'> = {
             artistName,
             title,
-            fragments: fragments.getState(),
+            fragments,
         };
 
         return this.itemsListRepo.create(stateWithoutId);
@@ -54,12 +52,12 @@ export class MainOrchestrator {
 
     async addFragment(
         id: string,
-        text: string,
+        fragment: { text: string; title: string; isDone: boolean },
         position: number
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
-        item.addFragment(text, position);
+        item.addFragment(fragment, position);
         await this.itemsListRepo.updateOne(item);
         return item;
     }
@@ -99,14 +97,14 @@ export class MainOrchestrator {
         return item;
     }
 
-    async renameFragmentTitle(
+    async updateFragment(
         id: string,
         index: number,
-        title: string
+        patch: { text?: string; title?: string }
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
-        item.renameFragmentTitle(index, title);
+        item.updateFragment(index, patch);
         await this.itemsListRepo.updateOne(item);
         return item;
     }

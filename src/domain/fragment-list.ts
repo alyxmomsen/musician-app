@@ -39,8 +39,15 @@ export class FragmentList {
 
     // ---------- Мутации ----------
 
-    add(text: string, position?: number): void {
-        const fragment = new TrackedItemTextFragment(text);
+    add(
+        input: { text: string; title?: string; isDone?: boolean },
+        position?: number
+    ): void {
+        const fragment = new TrackedItemTextFragment(
+            input.text,
+            input.title ?? '',
+            input.isDone ?? false
+        );
 
         if (position === undefined || position >= this.fragments.length) {
             this.fragments.push(fragment);
@@ -55,10 +62,6 @@ export class FragmentList {
     remove(index: number): void {
         this.assertIndex(index);
         this.fragments.splice(index, 1);
-    }
-
-    updateText(index: number, text: string): void {
-        this.getAt(index).setText(text);
     }
 
     setDone(index: number, done: boolean): void {
@@ -134,16 +137,6 @@ export class FragmentList {
         return new FragmentList(states.map((s) => TrackedItemTextFragment.fromState(s)));
     }
 
-    static fromText(text: string): FragmentList {
-        const fragments = text
-            .split('\n')
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0)
-            .map((line) => new TrackedItemTextFragment(line));
-
-        return new FragmentList(fragments);
-    }
-
     // ---------- Приватное ----------
 
     private assertIndex(index: number): void {
@@ -156,12 +149,17 @@ export class FragmentList {
         }
     }
 
-
     markReviewed(index: number, timestamp: number): void {
-    this.getAt(index).markReviewed(timestamp);
-}
+        this.getAt(index).markReviewed(timestamp);
+    }
 
     renameTitle(index: number, title: string): void {
         this.getAt(index).setTitle(title);
+    }
+
+    updateFragment(index: number, patch: { text?: string; title?: string }): void {
+        const fragment = this.getAt(index);
+        if (patch.text !== undefined) fragment.setText(patch.text);
+        if (patch.title !== undefined) fragment.setTitle(patch.title);
     }
 }

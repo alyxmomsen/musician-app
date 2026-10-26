@@ -49,16 +49,15 @@ export class TrackedItem {
         return this.fragments.getAll();
     }
 
-    addFragment(text: string, position?: number): void {
-        this.fragments.add(text, position);
+    addFragment(
+        input: { text: string; title?: string; isDone?: boolean },
+        position?: number
+    ): void {
+        this.fragments.add(input, position);
     }
 
     removeFragment(index: number): void {
         this.fragments.remove(index);
-    }
-
-    updateFragmentText(index: number, text: string): void {
-        this.fragments.updateText(index, text);
     }
 
     setFragmentDone(index: number, done: boolean): void {
@@ -100,5 +99,9 @@ export class TrackedItem {
 
     renameFragmentTitle(index: number, title: string): void {
         this.fragments.renameTitle(index, title);
+    }
+
+    updateFragment(index: number, patch: { text?: string; title?: string }): void {
+        this.fragments.updateFragment(index, patch);
     }
 }

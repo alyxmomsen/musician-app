@@ -66,6 +66,7 @@ export class TrackedItemsListController {
                 return res.status(404).json({ error: 'Item not found' });
             }
             res.json({
+                id: item.id,
                 ...item.getState(),
                 progress: item.calculateProgress(),
             });
@@ -76,35 +77,54 @@ export class TrackedItemsListController {
 
     create = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { artistName, title, text } = req.body as {
+            const { artistName, title, fragments } = req.body as {
                 artistName?: string;
                 title?: string;
-                text?: string;
+                fragments?: Array<{
+                    title?: string;
+                    text?: string;
+                    isDone?: boolean;
+                }>;
             };
 
             if (typeof artistName !== 'string' || artistName.trim() === '') {
-                return res
-                    .status(400)
-                    .json({ error: 'artistName is required' });
+                return res.status(400).json({ error: 'artistName is required' });
             }
             if (typeof title !== 'string' || title.trim() === '') {
                 return res.status(400).json({ error: 'title is required' });
             }
-            if (typeof text !== 'string') {
-                return res.status(400).json({ error: 'text is required' });
+            if (!Array.isArray(fragments)) {
+                return res.status(400).json({ error: 'fragments must be an array' });
             }
+
+            // Валидация каждого фрагмента
+            const normalizedFragments = fragments.map((f, i) => {
+                if (typeof f.text !== 'string' || f.text.trim() === '') {
+                    throw new Error(`fragments[${i}].text is required`);
+                }
+                return {
+                    text: f.text.trim(),
+                    title: typeof f.title === 'string' ? f.title.trim() : '',
+                    isDone: typeof f.isDone === 'boolean' ? f.isDone : false,
+                    lastReviewedAt: null,
+                };
+            });
 
             const item = await this.orchestrator.create(
                 artistName.trim(),
                 title.trim(),
-                text
+                normalizedFragments
             );
 
             res.status(201).json({
+                id: item.id,
                 ...item.getState(),
                 progress: item.calculateProgress(),
             });
         } catch (err) {
+            if (err instanceof Error && err.message.startsWith('fragments[')) {
+                return res.status(400).json({ error: err.message });
+            }
             next(err);
         }
     };
@@ -139,6 +159,7 @@ export class TrackedItemsListController {
             }
 
             res.json({
+                id: updated.id,
                 ...updated.getState(),
                 progress: updated.calculateProgress(),
             });
@@ -153,8 +174,10 @@ export class TrackedItemsListController {
         next: NextFunction
     ) => {
         try {
-            const { text, position } = req.body as {
+            const { text, title, isDone, position } = req.body as {
                 text?: string;
+                title?: string;
+                isDone?: boolean;
                 position?: number;
             };
 
@@ -169,7 +192,11 @@ export class TrackedItemsListController {
 
             const updated = await this.orchestrator.addFragment(
                 req.params.id,
-                text.trim(),
+                {
+                    text: text.trim(),
+                    title: typeof title === 'string' ? title.trim() : '',
+                    isDone: typeof isDone === 'boolean' ? isDone : false,
+                },
                 position as number
             );
             if (!updated) {
@@ -177,6 +204,7 @@ export class TrackedItemsListController {
             }
 
             res.json({
+                id: updated.id,
                 ...updated.getState(),
                 progress: updated.calculateProgress(),
             });
@@ -207,6 +235,7 @@ export class TrackedItemsListController {
             }
 
             res.json({
+                id: updated.id,
                 ...updated.getState(),
                 progress: updated.calculateProgress(),
             });
@@ -246,6 +275,7 @@ export class TrackedItemsListController {
             }
 
             res.json({
+                id: updated.id,
                 ...updated.getState(),
                 progress: updated.calculateProgress(),
             });
@@ -290,6 +320,7 @@ export class TrackedItemsListController {
             if (!updated) return res.status(404).json({ error: 'Item not found' });
 
             res.json({
+                id: updated.id,
                 ...updated.getState(),
                 progress: updated.calculateProgress(),
             });
@@ -298,14 +329,17 @@ export class TrackedItemsListController {
         }
     };
 
-    renameFragmentTitle = async (
+    updateFragment = async (
         req: Request<FragmentParams>,
         res: Response,
         next: NextFunction
     ) => {
         try {
             const { id, fragmentIndex } = req.params;
-            const { title } = req.body as { title?: string };
+            const { text, title } = req.body as {
+                text?: string;
+                title?: string;
+            };
             const index = Number(fragmentIndex);
 
             if (!Number.isInteger(index) || index < 0) {
@@ -313,18 +347,27 @@ export class TrackedItemsListController {
                     error: 'fragmentIndex must be a non-negative integer',
                 });
             }
-            if (typeof title !== 'string') {
+            if (text === undefined && title === undefined) {
+                return res.status(400).json({
+                    error: 'at least one of text or title is required',
+                });
+            }
+            if (text !== undefined && typeof text !== 'string') {
+                return res.status(400).json({ error: 'text must be a string' });
+            }
+            if (title !== undefined && typeof title !== 'string') {
                 return res.status(400).json({ error: 'title must be a string' });
             }
 
-            const updated = await this.orchestrator.renameFragmentTitle(
-                id,
-                index,
-                title
-            );
+            const patch: { text?: string; title?: string } = {};
+            if (text !== undefined) patch.text = text;
+            if (title !== undefined) patch.title = title;
+
+            const updated = await this.orchestrator.updateFragment(id, index, patch);
             if (!updated) return res.status(404).json({ error: 'Item not found' });
 
             res.json({
+                id: updated.id,
                 ...updated.getState(),
                 progress: updated.calculateProgress(),
             });
