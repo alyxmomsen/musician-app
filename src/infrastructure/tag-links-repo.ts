@@ -81,4 +81,31 @@ export class JsonTagLinksRepo implements ITagLinksRepo {
         }
         await this.persist();
     }
+
+    async deleteByTrackedItem(trackedItemId: string): Promise<void> {
+        for (const [id, state] of this.items.entries()) {
+            const t = state.target;
+            if (
+                (t.type === 'tracked-item' && t.trackedItemId === trackedItemId) ||
+                (t.type === 'fragment' && t.trackedItemId === trackedItemId)
+            ) {
+                this.items.delete(id);
+            }
+        }
+        await this.persist();
+    }
+
+    async deleteByFragment(trackedItemId: string, fragmentIndex: number): Promise<void> {
+        for (const [id, state] of this.items.entries()) {
+            const t = state.target;
+            if (
+                t.type === 'fragment' &&
+                t.trackedItemId === trackedItemId &&
+                t.fragmentIndex === fragmentIndex
+            ) {
+                this.items.delete(id);
+            }
+        }
+        await this.persist();
+    }
 }

@@ -8,4 +8,6 @@ export interface ITagLinksRepo {
     delete(id: TUniqueId): Promise<void>;
     deleteByTagId(tagId: TUniqueId): Promise<void>;
     deleteByTarget(target: TTagLinkTarget): Promise<void>;
+    deleteByTrackedItem(trackedItemId: string): Promise<void>;
+    deleteByFragment(trackedItemId: string, fragmentIndex: number): Promise<void>;
 }

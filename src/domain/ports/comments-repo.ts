@@ -9,4 +9,6 @@ export interface ICommentsRepo {
     update(comment: Comment): Promise<void>;
     delete(id: TUniqueId): Promise<void>;
     deleteByTarget(target: TCommentTarget): Promise<void>;
+    deleteByTrackedItem(trackedItemId: string): Promise<void>;
+    deleteByFragment(trackedItemId: string, fragmentIndex: number): Promise<void>;
 }
