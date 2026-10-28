@@ -3,7 +3,9 @@ import { createApp } from './infrastructure/express/app';
 import { Loop } from './infrastructure/loop';
 
 const appConfig: AppConfig = {
-    dataPath: './src/tracked-items.json',
+    trackedItemsPath: './src/tracked-items.json',
+    commentsPath: './src/comments.json',
+    tagLinksPath: './src/tag-links.json',
 };
 
 const bootstrapFactory = function (
@@ -15,18 +17,15 @@ const bootstrapFactory = function (
 (async (deps: { bootstrap: () => Promise<AppContainer> }) => {
     const appContainer = await deps.bootstrap();
 
-    const { setListController: itemsListController, setListRepo } =
-        appContainer;
+    const { setListController, commentsController } = appContainer;
 
-    const app = createApp(itemsListController);
+    const app = createApp(setListController, commentsController);
 
     app.listen(3000, '0.0.0.0', () => {
         console.log(`express running on port 3000`);
     });
 
-    const mainloop = new Loop(1000, async () => {
-        
-    });
+    const mainloop = new Loop(1000, async () => {});
 
     mainloop.start();
 })({ bootstrap: bootstrapFactory(appConfig) });
