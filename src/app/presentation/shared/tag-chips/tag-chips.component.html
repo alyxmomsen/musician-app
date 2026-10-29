@@ -1,0 +1,47 @@
+<div class="tag-chips">
+  @for (tag of tags(); track tag.id) {
+    <span class="tag-chip">
+      <span class="tag-text">{{ tag.originalText }}</span>
+      <button
+        type="button"
+        class="tag-remove"
+        (click)="removeTagById(tag.id)"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </span>
+  }
+
+  @if (!adding()) {
+    <button type="button" class="tag-add" (click)="startAdd()">
+      <i class="pi pi-plus"></i>
+      <span>Тег</span>
+    </button>
+  } @else {
+    <input
+      pInputText
+      type="text"
+      [ngModel]="newTagText()"
+      (ngModelChange)="newTagText.set($event)"
+      (keydown)="onKeydown($event)"
+      placeholder="тег (пробел — разделитель)"
+      class="tag-input"
+      autofocus
+    />
+    <p-button
+      icon="pi pi-check"
+      size="small"
+      [text]="true"
+      [loading]="saving()"
+      [disabled]="!newTagText().trim()"
+      (onClick)="submitAdd()"
+    />
+    <p-button
+      icon="pi pi-times"
+      size="small"
+      severity="secondary"
+      [text]="true"
+      (onClick)="cancelAdd()"
+    />
+  }
+</div>
