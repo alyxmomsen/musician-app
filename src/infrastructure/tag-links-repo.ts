@@ -104,4 +104,18 @@ export class JsonTagLinksRepo implements ITagLinksRepo {
         }
         await this.persist();
     }
+
+    async getByTrackedItem(trackedItemId: string): Promise<TagLink[]> {
+        const result: TagLink[] = [];
+        for (const state of this.items.values()) {
+            const t = state.target;
+            if (
+                (t.type === 'tracked-item' && t.trackedItemId === trackedItemId) ||
+                (t.type === 'fragment' && t.trackedItemId === trackedItemId)
+            ) {
+                result.push(TagLink.fromState(state));
+            }
+        }
+        return result;
+    }
 }

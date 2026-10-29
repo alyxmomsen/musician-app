@@ -99,4 +99,22 @@ export class TagsController {
             next(err);
         }
     };
+
+    getForTrackedItem = async (
+        req: Request<{ id: string }>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const result = await this.orchestrator.getForTrackedItem(req.params.id);
+            res.json(
+                result.map((r) => ({
+                    tag: r.tag.getState(),
+                    target: r.target,
+                }))
+            );
+        } catch (err) {
+            next(err);
+        }
+    };
 }

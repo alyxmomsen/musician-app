@@ -10,6 +10,7 @@ export function createTagsRouter(controller: TagsController): Router {
     router.post('/link', controller.add);
     router.delete('/link', controller.remove);
     router.post('/link/remove', controller.remove);
+    router.get('/for-tracked-item/:id', controller.getForTrackedItem);
     router.get('/:id/targets', controller.getTargetsForTag);
     router.delete('/:id', controller.removeTag);
 

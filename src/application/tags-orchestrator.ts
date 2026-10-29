@@ -6,6 +6,8 @@ import { DeleteTagUseCase } from './use-cases/tags/delete-tag.use-case';
 import { GetTagsForTargetUseCase } from './use-cases/tags/get-tags-for-target.use-case';
 import { GetTargetsForTagUseCase } from './use-cases/tags/get-targets-for-tag.use-case';
 import { GetAllTagsUseCase } from './use-cases/tags/get-all-tags.use-case';
+import { GetTagLinksByTrackedItemUseCase } from './use-cases/tags/get-tag-links-by-tracked-item.use-case';
+import { GetTagByIdUseCase } from './use-cases/tags/get-tag-by-id.use-case';
 
 export class TagsOrchestrator {
     constructor(
@@ -14,7 +16,10 @@ export class TagsOrchestrator {
         private deleteTagUseCase: DeleteTagUseCase,
         private getTagsForTargetUseCase: GetTagsForTargetUseCase,
         private getTargetsForTagUseCase: GetTargetsForTagUseCase,
-        private getAllTagsUseCase: GetAllTagsUseCase
+        private getAllTagsUseCase: GetAllTagsUseCase,
+
+        private getTagLinksByTrackedItem: GetTagLinksByTrackedItemUseCase,
+        private getTagById: GetTagByIdUseCase
     ) {}
 
     async add(tagText: string, target: TTagLinkTarget): Promise<{ tag: HashTag }> {
@@ -40,5 +45,17 @@ export class TagsOrchestrator {
 
     async getAll(): Promise<HashTag[]> {
         return this.getAllTagsUseCase.execute();
+    }
+
+    async getForTrackedItem(
+        trackedItemId: string
+    ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>> {
+        const links = await this.getTagLinksByTrackedItem.execute(trackedItemId);
+        const result: Array<{ tag: HashTag; target: TTagLinkTarget }> = [];
+        for (const link of links) {
+            const tag = await this.getTagById.execute(link.tagId);
+            if (tag) result.push({ tag, target: link.target });
+        }
+        return result;
     }
 }

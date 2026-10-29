@@ -22,6 +22,8 @@ import { GetTargetsForTagUseCase } from '../application/use-cases/tags/get-targe
 import { GetAllTagsUseCase } from '../application/use-cases/tags/get-all-tags.use-case';
 import { JsonTagsRepo } from '../infrastructure/tags-repo';
 import { TagsController } from '../presentation/controllers/tags.controller';
+import { GetTagLinksByTrackedItemUseCase } from '../application/use-cases/tags/get-tag-links-by-tracked-item.use-case';
+import { GetTagByIdUseCase } from '../application/use-cases/tags/get-tag-by-id.use-case';
 
 export interface AppConfig {
     trackedItemsPath: string;
@@ -72,7 +74,9 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         new DeleteTagUseCase(tagsRepo, tagLinksRepo),
         new GetTagsForTargetUseCase(tagsRepo, tagLinksRepo),
         new GetTargetsForTagUseCase(tagLinksRepo),
-        new GetAllTagsUseCase(tagsRepo)
+        new GetAllTagsUseCase(tagsRepo),
+        new GetTagLinksByTrackedItemUseCase(tagLinksRepo),
+        new GetTagByIdUseCase(tagsRepo),
     );
     const tagsController = new TagsController(tagsOrchestrator);
 

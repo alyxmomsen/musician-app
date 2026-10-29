@@ -10,4 +10,5 @@ export interface ITagLinksRepo {
     deleteByTarget(target: TTagLinkTarget): Promise<void>;
     deleteByTrackedItem(trackedItemId: string): Promise<void>;
     deleteByFragment(fragmentId: string): Promise<void>;
+    getByTrackedItem(trackedItemId: string): Promise<TagLink[]>;
 }
