@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { MenuItem } from 'primeng/api';
 import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tracked-item-text-fragment.entity';
+import { Comment } from '../../../domain/comment/models/comment.entity';
 
 @Component({
   selector: 'app-fragment-card',
@@ -30,11 +31,17 @@ import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tra
 })
 export class FragmentCardComponent {
   @Input({ required: true }) fragment!: TrackedItemTextFragment;
+  @Input() comments: Comment[] = [];
 
   @Output() toggleDone = new EventEmitter<{ fragmentId: string; done: boolean }>();
   @Output() markReviewed = new EventEmitter<string>();
-  @Output() update = new EventEmitter<{ fragmentId: string; text: string; title: string }>();
+  @Output() update = new EventEmitter<{
+    fragmentId: string;
+    text: string;
+    title: string;
+  }>();
   @Output() delete = new EventEmitter<string>();
+  @Output() deleteComment = new EventEmitter<string>();
 
   isExpanded = signal(false);
   isEditing = signal(false);
@@ -44,8 +51,16 @@ export class FragmentCardComponent {
   saving = signal(false);
 
   menuItems: MenuItem[] = [
-    { label: 'Редактировать', icon: 'pi pi-pencil', command: () => this.startEdit() },
-    { label: 'Удалить', icon: 'pi pi-trash', command: () => this.delete.emit(this.fragment.id) },
+    {
+      label: 'Редактировать',
+      icon: 'pi pi-pencil',
+      command: () => this.startEdit(),
+    },
+    {
+      label: 'Удалить',
+      icon: 'pi pi-trash',
+      command: () => this.delete.emit(this.fragment.id),
+    },
   ];
 
   onToggleDone(done: boolean): void {

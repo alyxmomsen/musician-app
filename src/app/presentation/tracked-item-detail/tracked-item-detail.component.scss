@@ -94,3 +94,40 @@
     gap: 0.5rem;
   }
 }
+
+.comment-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.comment-dialog {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.25rem;
+  width: 480px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comment-dialog-quote {
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid #ffc107;
+  background: #fffbe6;
+  font-style: italic;
+  color: #555;
+  font-size: 0.9rem;
+  border-radius: 0 6px 6px 0;
+}
+
+.comment-dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}

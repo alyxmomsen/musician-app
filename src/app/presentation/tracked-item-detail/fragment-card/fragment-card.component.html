@@ -55,6 +55,31 @@
         />
       </div>
     </div>
+
+    <!-- БЛОК КОММЕНТАРИЕВ: внутри @if (!isEditing()), после fragment-footer -->
+    @if (comments.length > 0) {
+      <div class="fragment-comments">
+        @for (comment of comments; track comment.id) {
+          <div class="fragment-comment">
+            @if (comment.target.type === 'fragment-range') {
+              <div class="comment-quote">{{ comment.target.quote }}</div>
+            }
+            <div class="comment-body">
+              <span class="comment-text">{{ comment.text }}</span>
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (onClick)="deleteComment.emit(comment.id)"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    }
+    <!-- КОНЕЦ БЛОКА КОММЕНТАРИЕВ -->
+
   } @else {
     <div class="edit-form">
       <input

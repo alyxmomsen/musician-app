@@ -1,4 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -6,6 +12,8 @@ import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmationService } from 'primeng/api';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
 
 import { GetTrackedItemByIdUseCase } from '../../application/tracked-item/use-cases/get-tracked-item-by-id.use-case';
 import { ToggleFragmentUseCase } from '../../application/tracked-item/use-cases/toggle-fragment.use-case';
@@ -14,12 +22,14 @@ import { AddFragmentUseCase } from '../../application/tracked-item/use-cases/add
 import { DeleteTrackedItemUseCase } from '../../application/tracked-item/use-cases/delete-tracked-item.use-case';
 import { MarkFragmentReviewedUseCase } from '../../application/tracked-item/use-cases/mark-fragment-reviewed.use-case';
 import { UpdateFragmentUseCase } from '../../application/tracked-item/use-cases/update-fragment.use-case';
+import { AddCommentUseCase } from '../../application/comment/use-cases/add-comment.use-case';
+import { DeleteCommentUseCase } from '../../application/comment/use-cases/delete-comment.use-case';
+import { GetCommentsByTrackedItemUseCase } from '../../application/comment/use-cases/get-comments-by-tracked-item.use-case';
 
 import { TrackedItem } from '../../domain/tracked-item/models/tracked-item.entity';
+import { Comment } from '../../domain/comment/models/comment.entity';
+import { SelectionService } from '../../core/services/selection.service';
 import { FragmentCardComponent } from './fragment-card/fragment-card.component';
-
-import { CheckboxModule } from 'primeng/checkbox';
-import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-tracked-item-detail',
@@ -45,6 +55,9 @@ import { InputTextModule } from 'primeng/inputtext';
     DeleteTrackedItemUseCase,
     MarkFragmentReviewedUseCase,
     UpdateFragmentUseCase,
+    AddCommentUseCase,
+    DeleteCommentUseCase,
+    GetCommentsByTrackedItemUseCase,
   ],
 })
 export class TrackedItemDetailComponent implements OnInit {
@@ -58,6 +71,22 @@ export class TrackedItemDetailComponent implements OnInit {
   newFragmentTitle = signal('');
   newFragmentIsDone = signal(false);
 
+  comments = signal<Comment[]>([]);
+
+  pendingSelection = signal<{
+    fragmentId: string;
+    start: number;
+    end: number;
+    quote: string;
+    rect: DOMRect;
+  } | null>(null);
+
+  showCommentDialog = signal(false);
+  newCommentText = signal('');
+  savingComment = signal(false);
+
+  @ViewChild('fragmentsContainer') fragmentsContainer?: ElementRef<HTMLElement>;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -68,7 +97,11 @@ export class TrackedItemDetailComponent implements OnInit {
     private deleteItem: DeleteTrackedItemUseCase,
     private markReviewed: MarkFragmentReviewedUseCase,
     private updateFragment: UpdateFragmentUseCase,
-    private confirmService: ConfirmationService
+    private confirmService: ConfirmationService,
+    private selectionService: SelectionService,
+    private addComment: AddCommentUseCase,
+    private deleteComment: DeleteCommentUseCase,
+    private getCommentsByTrackedItem: GetCommentsByTrackedItemUseCase
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -83,10 +116,13 @@ export class TrackedItemDetailComponent implements OnInit {
   async load(): Promise<void> {
     this.loading.set(true);
     try {
-      this.item.set(await this.getById.execute(this.id));
+      const item = await this.getById.execute(this.id);
+      this.item.set(item);
+      this.comments.set(await this.getCommentsByTrackedItem.execute(this.id));
     } catch (err) {
       console.error('Failed to load item:', err);
       this.item.set(null);
+      this.comments.set([]);
     } finally {
       this.loading.set(false);
     }
@@ -120,10 +156,14 @@ export class TrackedItemDetailComponent implements OnInit {
     title: string;
   }): Promise<void> {
     try {
-      const updated = await this.updateFragment.execute(this.id, event.fragmentId, {
-        text: event.text,
-        title: event.title,
-      });
+      const updated = await this.updateFragment.execute(
+        this.id,
+        event.fragmentId,
+        {
+          text: event.text,
+          title: event.title,
+        }
+      );
       this.item.set(updated);
     } catch (err) {
       console.error('Update fragment failed:', err);
@@ -135,6 +175,15 @@ export class TrackedItemDetailComponent implements OnInit {
     try {
       const updated = await this.removeFragment.execute(this.id, fragmentId);
       this.item.set(updated);
+      this.comments.update((list) =>
+        list.filter(
+          (c) =>
+            !(
+              c.target.type === 'fragment-range' &&
+              c.target.fragmentId === fragmentId
+            )
+        )
+      );
     } catch (err) {
       console.error('Remove fragment failed:', err);
     }
@@ -205,5 +254,123 @@ export class TrackedItemDetailComponent implements OnInit {
         }
       },
     });
+  }
+
+  // ---------- Комментарии ----------
+
+  commentsForFragment(fragmentId: string): Comment[] {
+    return this.comments().filter(
+      (c) =>
+        c.target.type === 'fragment-range' && c.target.fragmentId === fragmentId
+    );
+  }
+
+  commentsForItem(): Comment[] {
+    return this.comments().filter((c) => c.target.type === 'tracked-item');
+  }
+
+  onFragmentsMouseUp(event: MouseEvent): void {
+    const container = this.fragmentsContainer?.nativeElement;
+    if (!container) return;
+
+    const target = event.target as HTMLElement;
+    const fragmentEl = target.closest('[data-fragment-id]') as HTMLElement | null;
+    if (!fragmentEl) {
+      this.pendingSelection.set(null);
+      return;
+    }
+
+    const textEl = fragmentEl.querySelector('.fragment-text') as HTMLElement | null;
+    if (!textEl) {
+      this.pendingSelection.set(null);
+      return;
+    }
+
+    const selection = this.selectionService.getSelectionWithin(textEl);
+    if (!selection) {
+      this.pendingSelection.set(null);
+      return;
+    }
+
+    const rect = this.selectionService.getSelectionRect();
+    if (!rect) {
+      this.pendingSelection.set(null);
+      return;
+    }
+
+    const fragmentId = fragmentEl.dataset['fragmentId'];
+    if (!fragmentId) {
+      this.pendingSelection.set(null);
+      return;
+    }
+
+    this.pendingSelection.set({
+      fragmentId,
+      start: selection.start,
+      end: selection.end,
+      quote: selection.quote,
+      rect,
+    });
+  }
+
+  get floatingButtonStyle(): Record<string, string> {
+    const pending = this.pendingSelection();
+    if (!pending) return {};
+    const rect = pending.rect;
+    return {
+      position: 'fixed',
+      top: `${rect.top - 44}px`,
+      left: `${rect.left + rect.width / 2}px`,
+      transform: 'translateX(-50%)',
+      'z-index': '1000',
+    };
+  }
+
+  openCommentDialog(): void {
+    const pending = this.pendingSelection();
+    if (!pending) return;
+    this.newCommentText.set('');
+    this.showCommentDialog.set(true);
+  }
+
+  cancelCommentDialog(): void {
+    this.showCommentDialog.set(false);
+    this.newCommentText.set('');
+    this.pendingSelection.set(null);
+    this.selectionService.clear();
+  }
+
+  async submitComment(): Promise<void> {
+    const text = this.newCommentText().trim();
+    const pending = this.pendingSelection();
+    if (!text || !pending) return;
+
+    this.savingComment.set(true);
+    try {
+      const comment = await this.addComment.execute(text, {
+        type: 'fragment-range',
+        trackedItemId: this.id,
+        fragmentId: pending.fragmentId,
+        start: pending.start,
+        end: pending.end,
+        quote: pending.quote,
+      });
+      this.comments.update((list) => [...list, comment]);
+      this.cancelCommentDialog();
+    } catch (err) {
+      console.error('Add comment failed:', err);
+    } finally {
+      this.savingComment.set(false);
+    }
+  }
+
+  async deleteCommentById(id: string): Promise<void> {
+    if (!confirm('Удалить комментарий?')) return;
+    try {
+      await this.deleteComment.execute(id);
+      this.comments.update((list) => list.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error('Delete comment failed:', err);
+    }
   }
 }
