@@ -11,6 +11,12 @@ import { HttpTrackedItemRepository } from './infrastructure/tracked-item/http-tr
 
 import { MessageService } from 'primeng/api';
 
+import { COMMENTS_REPOSITORY_TOKEN } from './core/tokens/comments-repository.token';
+import { TAGS_REPOSITORY_TOKEN } from './core/tokens/tags-repository.token';
+import { HttpCommentsRepository } from './infrastructure/comment/http-comments.repository';
+import { HttpTagsRepository } from './infrastructure/tag/http-tags.repository';
+
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -21,6 +27,14 @@ export const appConfig: ApplicationConfig = {
     {
       provide: TRACKED_ITEM_REPOSITORY_TOKEN,
       useClass: HttpTrackedItemRepository,
+    },
+    {
+      provide: COMMENTS_REPOSITORY_TOKEN,
+      useClass: HttpCommentsRepository,
+    },
+    {
+      provide: TAGS_REPOSITORY_TOKEN,
+      useClass: HttpTagsRepository,
     },
   ],
 };
