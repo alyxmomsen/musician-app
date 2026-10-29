@@ -4,7 +4,7 @@ export type TCommentTarget =
     | {
           type: 'fragment-range';
           trackedItemId: string;
-          fragmentIndex: number;
+          fragmentId: string;
           start: number;
           end: number;
           quote: string;

@@ -9,5 +9,5 @@ export interface ITagLinksRepo {
     deleteByTagId(tagId: TUniqueId): Promise<void>;
     deleteByTarget(target: TTagLinkTarget): Promise<void>;
     deleteByTrackedItem(trackedItemId: string): Promise<void>;
-    deleteByFragment(trackedItemId: string, fragmentIndex: number): Promise<void>;
+    deleteByFragment(fragmentId: string): Promise<void>;
 }

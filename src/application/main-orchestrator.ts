@@ -1,6 +1,8 @@
 import { TrackedItem, TTrackedItemState } from '../domain/tracked-item';
 import { TTrackedItemTextFragmentState } from '../domain/tracked-item-fragment';
 import { ITrackedItemsListRepo } from '../domain/ports/tracked-items-list-repo';
+import { ICommentsRepo } from '../domain/ports/comments-repo';
+import { ITagLinksRepo } from '../domain/ports/tag-links-repo';
 import { IUniqueIdGenerator } from '../domain/ports/uniqueIdGenerator';
 import { ToggleFragmentUseCase } from './use-cases/toggle-fragment-use-case';
 
@@ -8,7 +10,9 @@ export class MainOrchestrator {
     constructor(
         private itemsListRepo: ITrackedItemsListRepo,
         private toggleFragmentUseCase: ToggleFragmentUseCase,
-        private idGenerator: IUniqueIdGenerator
+        private idGenerator: IUniqueIdGenerator,
+        private commentsRepo: ICommentsRepo,
+        private tagLinksRepo: ITagLinksRepo
     ) {}
 
     async getPage(
@@ -81,6 +85,10 @@ export class MainOrchestrator {
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
+
+        await this.commentsRepo.deleteByFragment(fragmentId);
+        await this.tagLinksRepo.deleteByFragment(fragmentId);
+
         item.removeFragment(fragmentId);
         await this.itemsListRepo.updateOne(item);
         return item;
@@ -95,6 +103,8 @@ export class MainOrchestrator {
     }
 
     async delete(id: string): Promise<void> {
+        await this.commentsRepo.deleteByTrackedItem(id);
+        await this.tagLinksRepo.deleteByTrackedItem(id);
         await this.itemsListRepo.removeOne(id);
     }
 

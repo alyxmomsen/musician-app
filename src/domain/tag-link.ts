@@ -8,7 +8,7 @@ export type TTagLinkTarget =
     | {
           type: 'fragment';
           trackedItemId: string;
-          fragmentIndex: number;
+          fragmentId: string;
       }
     | {
           type: 'comment';

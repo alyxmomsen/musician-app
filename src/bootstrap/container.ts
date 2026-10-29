@@ -52,7 +52,9 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     const orchestrator = new MainOrchestrator(
         setListRepo,
         toggleFragmentUseCase,
-        uniqueIdGenerator
+        uniqueIdGenerator,
+        commentsRepo,
+        tagLinksRepo
     );
     const setListController = new TrackedItemsListController(orchestrator);
 
@@ -84,10 +86,13 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
 
     const existing = await setListRepo.getAll();
     if (existing.length === 0) {
-        await setListRepo.addMany([
-            { artistName: 'Placebo', title: 'The Bitter End', fragments: [] },
-            { artistName: 'Placebo', title: 'Every Me Every You', fragments: [] },
-            { artistName: 'Placebo', title: 'Special Needs', fragments: [] },
+        await orchestrator.create('Placebo', 'The Bitter End', []);
+        await orchestrator.create('Placebo', 'Every Me Every You', []);
+        await orchestrator.create('Placebo', 'Special Needs', []);
+        await orchestrator.create('Placebo', 'This Picture', [
+            { text: 'Farewell the ashtray girl', title: '', isDone: false },
+            { text: 'Forbidden snowflake', title: '', isDone: false },
+            { text: 'Beware this troubled world', title: '', isDone: false },
         ]);
     }
 

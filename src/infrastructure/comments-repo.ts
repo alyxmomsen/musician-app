@@ -106,14 +106,10 @@ export class JsonCommentsRepo implements ICommentsRepo {
         await this.persist();
     }
 
-    async deleteByFragment(trackedItemId: string, fragmentIndex: number): Promise<void> {
+    async deleteByFragment(fragmentId: string): Promise<void> {
         for (const [id, state] of this.items.entries()) {
             const t = state.target;
-            if (
-                t.type === 'fragment-range' &&
-                t.trackedItemId === trackedItemId &&
-                t.fragmentIndex === fragmentIndex
-            ) {
+            if (t.type === 'fragment-range' && t.fragmentId === fragmentId) {
                 this.items.delete(id);
             }
         }
