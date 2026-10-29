@@ -1,0 +1,61 @@
+<div class="page">
+  <header class="page-header">
+    <h1>Сет лист</h1>
+    <p-button
+      label="Добавить"
+      icon="pi pi-plus"
+      routerLink="/items/new"
+    />
+  </header>
+
+  @if (loading()) {
+    <p-progressbar mode="indeterminate" />
+  }
+
+  @if (!loading() && items().length === 0) {
+    <div class="empty">Здесь пока ничего нет</div>
+  }
+
+  <ul class="cards">
+    @for (item of items(); track item.id) {
+      <li class="card" [routerLink]="['/items', item.id]">
+        <div class="card-body">
+          <div class="card-title">
+            <span class="artist">{{ item.artistName }}</span>
+            <span class="separator">—</span>
+            <span class="title">{{ item.title }}</span>
+          </div>
+          <p-progressbar [value]="item.progress" [showValue]="true" />
+        </div>
+
+        <button
+          type="button"
+          class="card-menu-btn"
+          (click)="openMenu($event, item, menu)"
+        >
+          <i class="pi pi-ellipsis-v"></i>
+        </button>
+        <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+      </li>
+    }
+  </ul>
+
+  @if (total() > limit) {
+    <div class="pagination">
+      <p-button
+        label="Назад"
+        icon="pi pi-chevron-left"
+        [disabled]="!hasPrev"
+        (onClick)="prev()"
+      />
+      <span class="page-info">{{ page() }} / {{ totalPages }}</span>
+      <p-button
+        label="Вперёд"
+        icon="pi pi-chevron-right"
+        iconPos="right"
+        [disabled]="!hasNext"
+        (onClick)="next()"
+      />
+    </div>
+  }
+</div>

@@ -1,0 +1,92 @@
+<div class="fragment-card" [class.done]="fragment.isDone">
+  @if (!isEditing()) {
+    <div class="fragment-header">
+      @if (fragment.title) {
+        <span class="fragment-title">{{ fragment.title }}</span>
+      } @else {
+        <span class="fragment-title empty">Без названия</span>
+      }
+      <p-button
+        icon="pi pi-ellipsis-v"
+        [text]="true"
+        (onClick)="menu.toggle($event)"
+      />
+    </div>
+
+    <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+
+    @if (!isExpanded()) {
+      <div
+        ngxClamp
+        [lines]="3"
+        class="fragment-text clamped"
+        [textContent]="fragment.text"
+        (click)="toggleExpand()"
+      ></div>
+    } @else {
+      <div
+        class="fragment-text expanded"
+        [textContent]="fragment.text"
+        (click)="toggleExpand()"
+      ></div>
+    }
+
+    <div class="fragment-footer">
+      <div class="footer-left">
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="fragment.isDone"
+          (ngModelChange)="onToggleDone($event)"
+          [inputId]="'frag-done-' + fragment.id"
+        />
+        <label [for]="'frag-done-' + fragment.id" class="done-label">Выучено</label>
+      </div>
+
+      <div class="footer-right">
+        <span class="review-date">
+          Повторял: {{ formatReviewDate(fragment.lastReviewedAt) }}
+        </span>
+        <p-button
+          icon="pi pi-refresh"
+          [text]="true"
+          size="small"
+          (onClick)="onMarkReviewed()"
+          pTooltip="Отметить повторение"
+        />
+      </div>
+    </div>
+  } @else {
+    <div class="edit-form">
+      <input
+        pInputText
+        type="text"
+        [ngModel]="editTitle()"
+        (ngModelChange)="editTitle.set($event)"
+        placeholder="Название (необязательно)"
+      />
+      <textarea
+        pTextarea
+        rows="4"
+        [ngModel]="editText()"
+        (ngModelChange)="editText.set($event)"
+        placeholder="Текст фрагмента"
+      ></textarea>
+      <div class="edit-actions">
+        <p-button
+          label="Сохранить"
+          icon="pi pi-check"
+          [loading]="saving()"
+          [disabled]="!editText().trim()"
+          (onClick)="submitEdit()"
+        />
+        <p-button
+          label="Отмена"
+          icon="pi pi-times"
+          severity="secondary"
+          [text]="true"
+          (onClick)="cancelEdit()"
+        />
+      </div>
+    </div>
+  }
+</div>

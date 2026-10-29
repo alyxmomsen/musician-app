@@ -1,0 +1,113 @@
+<div class="page">
+  <header class="page-header">
+    <p-button
+      label="Назад"
+      icon="pi pi-arrow-left"
+      [text]="true"
+      routerLink="/"
+    />
+    <div class="actions">
+      <p-button
+        label="Редактировать"
+        icon="pi pi-pencil"
+        [text]="true"
+        [routerLink]="['/items', id, 'edit']"
+      />
+      <p-button
+        label="Удалить"
+        icon="pi pi-trash"
+        severity="danger"
+        [text]="true"
+        (onClick)="onDelete()"
+      />
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p-progressbar mode="indeterminate" />
+  }
+
+  @if (item(); as it) {
+    <div class="detail-header">
+      <div class="artist">{{ it.artistName }}</div>
+      <h1 class="title">{{ it.title }}</h1>
+    </div>
+
+    <div class="progress-block">
+      <p-progressbar [value]="it.progress" [showValue]="true" />
+      <div class="progress-caption">
+        {{ completedCount }} из {{ it.fragments.length }} фрагментов
+      </div>
+    </div>
+
+    <div class="fragments">
+      <h2>Фрагменты</h2>
+
+      @if (it.fragments.length === 0) {
+        <div class="empty">Нет фрагментов</div>
+      }
+
+      @for (fragment of it.fragments; track fragment.id) {
+        <app-fragment-card
+          [fragment]="fragment"
+          (toggleDone)="onToggleDone($event)"
+          (markReviewed)="onMarkReviewed($event)"
+          (update)="onUpdateFragment($event)"
+          (delete)="onRemoveFragment($event)"
+        />
+      }
+
+      @if (!adding()) {
+        <p-button
+          label="Добавить фрагмент"
+          icon="pi pi-plus"
+          [text]="true"
+          (onClick)="startAdd()"
+        />
+      } @else {
+        <div class="add-form">
+          <input
+            pInputText
+            type="text"
+            [ngModel]="newFragmentTitle()"
+            (ngModelChange)="newFragmentTitle.set($event)"
+            placeholder="Название (необязательно)"
+            class="add-title"
+          />
+          <textarea
+            pTextarea
+            rows="3"
+            [ngModel]="newFragmentText()"
+            (ngModelChange)="newFragmentText.set($event)"
+            placeholder="Текст фрагмента"
+          ></textarea>
+          <div class="add-done">
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="newFragmentIsDone()"
+              (ngModelChange)="newFragmentIsDone.set($event)"
+              inputId="add-frag-done"
+            />
+            <label for="add-frag-done">Уже выучен</label>
+          </div>
+          <div class="add-actions">
+            <p-button
+              label="Сохранить"
+              icon="pi pi-check"
+              [loading]="saving()"
+              [disabled]="!newFragmentText().trim()"
+              (onClick)="submitAdd()"
+            />
+            <p-button
+              label="Отмена"
+              icon="pi pi-times"
+              severity="secondary"
+              [text]="true"
+              (onClick)="cancelAdd()"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

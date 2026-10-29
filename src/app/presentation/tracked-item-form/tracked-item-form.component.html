@@ -1,0 +1,108 @@
+<div class="page">
+  <header class="page-header">
+    <p-button
+      label="Назад"
+      icon="pi pi-arrow-left"
+      [text]="true"
+      routerLink="/"
+    />
+  </header>
+
+  @if (loading()) {
+    <p-progressbar mode="indeterminate" />
+  }
+
+  @if (!loading()) {
+    <h1>{{ isEdit() ? 'Редактирование' : 'Новый элемент' }}</h1>
+
+    <div class="form">
+      <label class="field">
+        <span>Автор</span>
+        <input
+          pInputText
+          type="text"
+          [ngModel]="artistName()"
+          (ngModelChange)="artistName.set($event)"
+          placeholder="Placebo"
+        />
+      </label>
+
+      <label class="field">
+        <span>Название</span>
+        <input
+          pInputText
+          type="text"
+          [ngModel]="title()"
+          (ngModelChange)="title.set($event)"
+          placeholder="Special Needs"
+        />
+      </label>
+
+      @if (!isEdit()) {
+  <div class="fragments-block">
+    <div class="fragments-header">
+      <span>Фрагменты</span>
+      <p-button
+        label="Добавить фрагмент"
+        icon="pi pi-plus"
+        [text]="true"
+        size="small"
+        (onClick)="addFragment()"
+      />
+    </div>
+
+    @if (fragments().length === 0) {
+      <div class="empty-fragments">Фрагментов пока нет</div>
+    }
+
+    @for (fragment of fragments(); track $index; let i = $index) {
+      <div class="fragment-draft">
+        <div class="draft-header">
+          <input
+            pInputText
+            type="text"
+            [ngModel]="fragment.title"
+            (ngModelChange)="updateFragment(i, { title: $event })"
+            placeholder="Название (необязательно)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            size="small"
+            (onClick)="removeFragment(i)"
+          />
+        </div>
+        <textarea
+          pTextarea
+          rows="3"
+          [ngModel]="fragment.text"
+          (ngModelChange)="updateFragment(i, { text: $event })"
+          placeholder="Текст фрагмента"
+        ></textarea>
+        <div class="draft-done">
+          <p-checkbox
+            [binary]="true"
+            [ngModel]="fragment.isDone"
+            (ngModelChange)="updateFragment(i, { isDone: $event })"
+            [inputId]="'draft-done-' + i"
+          />
+          <label [for]="'draft-done-' + i">Уже выучен</label>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+      <div class="actions">
+        <p-button
+          label="Сохранить"
+          icon="pi pi-check"
+          [loading]="saving()"
+          [disabled]="!artistName().trim() || !title().trim()"
+          (onClick)="save()"
+        />
+      </div>
+    </div>
+  }
+</div>
