@@ -7,7 +7,7 @@ interface IdParams {
 
 interface FragmentParams {
     id: string;
-    fragmentIndex: string;
+    fragmentId: string;
 }
 
 const DEFAULT_PAGE = 1;
@@ -27,11 +27,7 @@ export class TrackedItemsListController {
                     .status(400)
                     .json({ error: 'page must be a positive integer' });
             }
-            if (
-                !Number.isInteger(limit) ||
-                limit < 1 ||
-                limit > MAX_LIMIT
-            ) {
+            if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIMIT) {
                 return res.status(400).json({
                     error: `limit must be between 1 and ${MAX_LIMIT}`,
                 });
@@ -97,7 +93,6 @@ export class TrackedItemsListController {
                 return res.status(400).json({ error: 'fragments must be an array' });
             }
 
-            // Валидация каждого фрагмента
             const normalizedFragments = fragments.map((f, i) => {
                 if (typeof f.text !== 'string' || f.text.trim() === '') {
                     throw new Error(`fragments[${i}].text is required`);
@@ -106,7 +101,6 @@ export class TrackedItemsListController {
                     text: f.text.trim(),
                     title: typeof f.title === 'string' ? f.title.trim() : '',
                     isDone: typeof f.isDone === 'boolean' ? f.isDone : false,
-                    lastReviewedAt: null,
                 };
             });
 
@@ -141,9 +135,7 @@ export class TrackedItemsListController {
             };
 
             if (typeof artistName !== 'string' || artistName.trim() === '') {
-                return res
-                    .status(400)
-                    .json({ error: 'artistName is required' });
+                return res.status(400).json({ error: 'artistName is required' });
             }
             if (typeof title !== 'string' || title.trim() === '') {
                 return res.status(400).json({ error: 'title is required' });
@@ -219,16 +211,14 @@ export class TrackedItemsListController {
         next: NextFunction
     ) => {
         try {
-            const index = Number(req.params.fragmentIndex);
-            if (!Number.isInteger(index) || index < 0) {
-                return res.status(400).json({
-                    error: 'fragmentIndex must be a non-negative integer',
-                });
+            const { fragmentId } = req.params;
+            if (!fragmentId) {
+                return res.status(400).json({ error: 'fragmentId is required' });
             }
 
             const updated = await this.orchestrator.removeFragment(
                 req.params.id,
-                index
+                fragmentId
             );
             if (!updated) {
                 return res.status(404).json({ error: 'Item not found' });
@@ -250,24 +240,19 @@ export class TrackedItemsListController {
         next: NextFunction
     ) => {
         try {
-            const { id, fragmentIndex } = req.params;
+            const { id, fragmentId } = req.params;
             const { done } = req.body as { done: boolean };
-            const index = Number(fragmentIndex);
 
-            if (!Number.isInteger(index) || index < 0) {
-                return res.status(400).json({
-                    error: 'fragmentIndex must be a non-negative integer',
-                });
+            if (!fragmentId) {
+                return res.status(400).json({ error: 'fragmentId is required' });
             }
             if (typeof done !== 'boolean') {
-                return res
-                    .status(400)
-                    .json({ error: 'done must be a boolean' });
+                return res.status(400).json({ error: 'done must be a boolean' });
             }
 
             const updated = await this.orchestrator.toggleFragment(
                 id,
-                index,
+                fragmentId,
                 done
             );
             if (!updated) {
@@ -303,21 +288,19 @@ export class TrackedItemsListController {
         next: NextFunction
     ) => {
         try {
-            const { id, fragmentIndex } = req.params;
-            const index = Number(fragmentIndex);
-
-            if (!Number.isInteger(index) || index < 0) {
-                return res.status(400).json({
-                    error: 'fragmentIndex must be a non-negative integer',
-                });
+            const { id, fragmentId } = req.params;
+            if (!fragmentId) {
+                return res.status(400).json({ error: 'fragmentId is required' });
             }
 
             const updated = await this.orchestrator.markFragmentReviewed(
                 id,
-                index,
+                fragmentId,
                 Date.now()
             );
-            if (!updated) return res.status(404).json({ error: 'Item not found' });
+            if (!updated) {
+                return res.status(404).json({ error: 'Item not found' });
+            }
 
             res.json({
                 id: updated.id,
@@ -335,17 +318,14 @@ export class TrackedItemsListController {
         next: NextFunction
     ) => {
         try {
-            const { id, fragmentIndex } = req.params;
+            const { id, fragmentId } = req.params;
             const { text, title } = req.body as {
                 text?: string;
                 title?: string;
             };
-            const index = Number(fragmentIndex);
 
-            if (!Number.isInteger(index) || index < 0) {
-                return res.status(400).json({
-                    error: 'fragmentIndex must be a non-negative integer',
-                });
+            if (!fragmentId) {
+                return res.status(400).json({ error: 'fragmentId is required' });
             }
             if (text === undefined && title === undefined) {
                 return res.status(400).json({
@@ -363,8 +343,14 @@ export class TrackedItemsListController {
             if (text !== undefined) patch.text = text;
             if (title !== undefined) patch.title = title;
 
-            const updated = await this.orchestrator.updateFragment(id, index, patch);
-            if (!updated) return res.status(404).json({ error: 'Item not found' });
+            const updated = await this.orchestrator.updateFragment(
+                id,
+                fragmentId,
+                patch
+            );
+            if (!updated) {
+                return res.status(404).json({ error: 'Item not found' });
+            }
 
             res.json({
                 id: updated.id,
@@ -375,5 +361,4 @@ export class TrackedItemsListController {
             next(err);
         }
     };
-
 }

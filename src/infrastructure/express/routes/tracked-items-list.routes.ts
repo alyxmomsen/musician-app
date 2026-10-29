@@ -13,12 +13,12 @@ export function createTrackedItemsListRouter(
     router.delete('/:id', controller.remove);
 
     router.post('/:id/fragments', controller.addFragment);
-    router.delete('/:id/fragments/:fragmentIndex', controller.removeFragment);
+    router.delete('/:id/fragments/:fragmentId', controller.removeFragment);
 
     // PATCH-роуты: сначала более специфичные, потом общий
-    router.patch('/:id/fragments/:fragmentIndex/done', controller.toggleFragment);
-    router.patch('/:id/fragments/:fragmentIndex/review', controller.markFragmentReviewed);
-    router.patch('/:id/fragments/:fragmentIndex', controller.updateFragment);
+    router.patch('/:id/fragments/:fragmentId/done', controller.toggleFragment);
+    router.patch('/:id/fragments/:fragmentId/review', controller.markFragmentReviewed);
+    router.patch('/:id/fragments/:fragmentId', controller.updateFragment);
 
     return router;
 }

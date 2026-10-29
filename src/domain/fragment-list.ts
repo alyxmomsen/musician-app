@@ -2,6 +2,7 @@ import {
     TrackedItemTextFragment,
     TTrackedItemTextFragmentState,
 } from './tracked-item-fragment';
+import { TUniqueId } from './types/unique-id';
 
 export interface FragmentsCompletionSummary {
     total: number;
@@ -21,12 +22,8 @@ export class FragmentList {
         return this.fragments;
     }
 
-    getAt(index: number): TrackedItemTextFragment {
-        const fragment = this.fragments[index];
-        if (!fragment) {
-            throw new Error(`Fragment ${index} not found`);
-        }
-        return fragment;
+    getById(id: TUniqueId): TrackedItemTextFragment | null {
+        return this.fragments.find((f) => f.id === id) ?? null;
     }
 
     get length(): number {
@@ -40,10 +37,11 @@ export class FragmentList {
     // ---------- Мутации ----------
 
     add(
-        input: { text: string; title?: string; isDone?: boolean },
+        input: { id: TUniqueId; text: string; title?: string; isDone?: boolean },
         position?: number
     ): void {
         const fragment = new TrackedItemTextFragment(
+            input.id,
             input.text,
             input.title ?? '',
             input.isDone ?? false
@@ -59,19 +57,44 @@ export class FragmentList {
         this.fragments.splice(position, 0, fragment);
     }
 
-    remove(index: number): void {
-        this.assertIndex(index);
+    remove(id: TUniqueId): void {
+        const index = this.indexOf(id);
+        if (index === -1) {
+            throw new Error(`Fragment ${id} not found`);
+        }
         this.fragments.splice(index, 1);
     }
 
-    setDone(index: number, done: boolean): void {
-        const fragment = this.getAt(index);
+    setDone(id: TUniqueId, done: boolean): void {
+        const fragment = this.getOrThrow(id);
         if (done) fragment.done();
         else fragment.unDone();
     }
 
-    splitFragmentBySeparator(index: number, separator: string = '\n'): void {
-        const fragment = this.getAt(index);
+    markReviewed(id: TUniqueId, timestamp: number): void {
+        this.getOrThrow(id).markReviewed(timestamp);
+    }
+
+    renameTitle(id: TUniqueId, title: string): void {
+        this.getOrThrow(id).setTitle(title);
+    }
+
+    updateFragment(id: TUniqueId, patch: { text?: string; title?: string }): void {
+        const fragment = this.getOrThrow(id);
+        if (patch.text !== undefined) fragment.setText(patch.text);
+        if (patch.title !== undefined) fragment.setTitle(patch.title);
+    }
+
+    splitFragmentBySeparator(
+        id: TUniqueId,
+        generateId: () => string,
+        separator: string = '\n'
+    ): void {
+        const index = this.indexOf(id);
+        if (index === -1) {
+            throw new Error(`Fragment ${id} not found`);
+        }
+        const fragment = this.fragments[index];
 
         const parts = fragment
             .getText()
@@ -84,29 +107,35 @@ export class FragmentList {
         }
 
         const newFragments = parts.map(
-            (text) => new TrackedItemTextFragment(text)
+            (text) => new TrackedItemTextFragment(generateId(), text)
         );
 
         this.fragments.splice(index, 1, ...newFragments);
     }
 
-    merge(indexA: number, indexB: number, separator: string = '\n'): void {
-        this.assertIndex(indexA);
-        this.assertIndex(indexB);
+    merge(
+        idA: TUniqueId,
+        idB: TUniqueId,
+        newId: TUniqueId,
+        separator: string = '\n'
+    ): void {
+        const indexA = this.indexOf(idA);
+        const indexB = this.indexOf(idB);
 
-        if (indexA === indexB) {
-            throw new Error('Cannot merge fragment with itself');
-        }
+        if (indexA === -1) throw new Error(`Fragment ${idA} not found`);
+        if (indexB === -1) throw new Error(`Fragment ${idB} not found`);
+        if (indexA === indexB) throw new Error('Cannot merge fragment with itself');
         if (Math.abs(indexA - indexB) !== 1) {
             throw new Error('Can only merge adjacent fragments');
         }
 
         const lo = Math.min(indexA, indexB);
         const hi = Math.max(indexA, indexB);
-        const a = this.getAt(lo);
-        const b = this.getAt(hi);
+        const a = this.fragments[lo];
+        const b = this.fragments[hi];
 
         const merged = new TrackedItemTextFragment(
+            newId,
             `${a.getText()}${separator}${b.getText()}`,
             '',
             a.isCompleted() && b.isCompleted()
@@ -134,32 +163,22 @@ export class FragmentList {
     }
 
     static fromState(states: TTrackedItemTextFragmentState[]): FragmentList {
-        return new FragmentList(states.map((s) => TrackedItemTextFragment.fromState(s)));
+        return new FragmentList(
+            states.map((s) => TrackedItemTextFragment.fromState(s))
+        );
     }
 
     // ---------- Приватное ----------
 
-    private assertIndex(index: number): void {
-        if (
-            !Number.isInteger(index) ||
-            index < 0 ||
-            index >= this.fragments.length
-        ) {
-            throw new Error(`Fragment ${index} not found`);
+    private getOrThrow(id: TUniqueId): TrackedItemTextFragment {
+        const fragment = this.getById(id);
+        if (!fragment) {
+            throw new Error(`Fragment ${id} not found`);
         }
+        return fragment;
     }
 
-    markReviewed(index: number, timestamp: number): void {
-        this.getAt(index).markReviewed(timestamp);
-    }
-
-    renameTitle(index: number, title: string): void {
-        this.getAt(index).setTitle(title);
-    }
-
-    updateFragment(index: number, patch: { text?: string; title?: string }): void {
-        const fragment = this.getAt(index);
-        if (patch.text !== undefined) fragment.setText(patch.text);
-        if (patch.title !== undefined) fragment.setTitle(patch.title);
+    private indexOf(id: TUniqueId): number {
+        return this.fragments.findIndex((f) => f.id === id);
     }
 }

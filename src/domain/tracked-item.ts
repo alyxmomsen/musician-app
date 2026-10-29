@@ -3,6 +3,7 @@ import {
     TrackedItemTextFragment,
     TTrackedItemTextFragmentState,
 } from './tracked-item-fragment';
+import { TUniqueId } from './types/unique-id';
 
 export type TTrackedItemState = {
     artistName: string;
@@ -50,26 +51,35 @@ export class TrackedItem {
     }
 
     addFragment(
-        input: { text: string; title?: string; isDone?: boolean },
+        input: { id: TUniqueId; text: string; title?: string; isDone?: boolean },
         position?: number
     ): void {
         this.fragments.add(input, position);
     }
 
-    removeFragment(index: number): void {
-        this.fragments.remove(index);
+    removeFragment(id: TUniqueId): void {
+        this.fragments.remove(id);
     }
 
-    setFragmentDone(index: number, done: boolean): void {
-        this.fragments.setDone(index, done);
+    setFragmentDone(id: TUniqueId, done: boolean): void {
+        this.fragments.setDone(id, done);
     }
 
-    splitFragment(index: number, separator: string = '\n'): void {
-        this.fragments.splitFragmentBySeparator(index, separator);
+    splitFragment(
+        id: TUniqueId,
+        generateId: () => string,
+        separator: string = '\n'
+    ): void {
+        this.fragments.splitFragmentBySeparator(id, generateId, separator);
     }
 
-    mergeFragments(indexA: number, indexB: number, separator: string = '\n'): void {
-        this.fragments.merge(indexA, indexB, separator);
+    mergeFragments(
+        idA: TUniqueId,
+        idB: TUniqueId,
+        newId: TUniqueId,
+        separator: string = '\n'
+    ): void {
+        this.fragments.merge(idA, idB, newId, separator);
     }
 
     // ---------- Прогресс ----------
@@ -93,15 +103,15 @@ export class TrackedItem {
         };
     }
 
-    markFragmentReviewed(index: number, timestamp: number): void {
-        this.fragments.markReviewed(index, timestamp);
+    markFragmentReviewed(id: TUniqueId, timestamp: number): void {
+        this.fragments.markReviewed(id, timestamp);
     }
 
-    renameFragmentTitle(index: number, title: string): void {
-        this.fragments.renameTitle(index, title);
+    renameFragmentTitle(id: TUniqueId, title: string): void {
+        this.fragments.renameTitle(id, title);
     }
 
-    updateFragment(index: number, patch: { text?: string; title?: string }): void {
-        this.fragments.updateFragment(index, patch);
+    updateFragment(id: TUniqueId, patch: { text?: string; title?: string }): void {
+        this.fragments.updateFragment(id, patch);
     }
 }

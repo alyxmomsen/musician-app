@@ -1,12 +1,14 @@
 import { TrackedItem, TTrackedItemState } from '../domain/tracked-item';
-import { ITrackedItemsListRepo } from '../domain/ports/tracked-items-list-repo';
-import { ToggleFragmentUseCase } from './use-cases/toggle-fragment-use-case';
 import { TTrackedItemTextFragmentState } from '../domain/tracked-item-fragment';
+import { ITrackedItemsListRepo } from '../domain/ports/tracked-items-list-repo';
+import { IUniqueIdGenerator } from '../domain/ports/uniqueIdGenerator';
+import { ToggleFragmentUseCase } from './use-cases/toggle-fragment-use-case';
 
 export class MainOrchestrator {
     constructor(
         private itemsListRepo: ITrackedItemsListRepo,
-        private toggleFragmentUseCase: ToggleFragmentUseCase
+        private toggleFragmentUseCase: ToggleFragmentUseCase,
+        private idGenerator: IUniqueIdGenerator
     ) {}
 
     async getPage(
@@ -27,12 +29,22 @@ export class MainOrchestrator {
     async create(
         artistName: string,
         title: string,
-        fragments: TTrackedItemTextFragmentState[]
+        fragments: Array<{ text: string; title: string; isDone: boolean }>
     ): Promise<TrackedItem> {
+        const fragmentsWithIds: TTrackedItemTextFragmentState[] = fragments.map(
+            (f) => ({
+                id: this.idGenerator.generate(),
+                text: f.text,
+                title: f.title,
+                isDone: f.isDone,
+                lastReviewedAt: null,
+            })
+        );
+
         const stateWithoutId: Omit<TTrackedItemState, 'id'> = {
             artistName,
             title,
-            fragments,
+            fragments: fragmentsWithIds,
         };
 
         return this.itemsListRepo.create(stateWithoutId);
@@ -57,28 +69,29 @@ export class MainOrchestrator {
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
-        item.addFragment(fragment, position);
+        const fragmentId = this.idGenerator.generate();
+        item.addFragment({ id: fragmentId, ...fragment }, position);
         await this.itemsListRepo.updateOne(item);
         return item;
     }
 
     async removeFragment(
         id: string,
-        index: number
+        fragmentId: string
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
-        item.removeFragment(index);
+        item.removeFragment(fragmentId);
         await this.itemsListRepo.updateOne(item);
         return item;
     }
 
     async toggleFragment(
         id: string,
-        fragmentIndex: number,
+        fragmentId: string,
         done: boolean
     ): Promise<TrackedItem | null> {
-        return this.toggleFragmentUseCase.toggle(id, fragmentIndex, done);
+        return this.toggleFragmentUseCase.toggle(id, fragmentId, done);
     }
 
     async delete(id: string): Promise<void> {
@@ -87,24 +100,24 @@ export class MainOrchestrator {
 
     async markFragmentReviewed(
         id: string,
-        index: number,
+        fragmentId: string,
         timestamp: number
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
-        item.markFragmentReviewed(index, timestamp);
+        item.markFragmentReviewed(fragmentId, timestamp);
         await this.itemsListRepo.updateOne(item);
         return item;
     }
 
     async updateFragment(
         id: string,
-        index: number,
+        fragmentId: string,
         patch: { text?: string; title?: string }
     ): Promise<TrackedItem | null> {
         const item = await this.itemsListRepo.getById(id);
         if (!item) return null;
-        item.updateFragment(index, patch);
+        item.updateFragment(fragmentId, patch);
         await this.itemsListRepo.updateOne(item);
         return item;
     }

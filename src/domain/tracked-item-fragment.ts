@@ -1,6 +1,8 @@
 import { ReviewedAt } from './reviewed-at';
+import { TUniqueId } from './types/unique-id';
 
 export type TTrackedItemTextFragmentState = {
+    id: TUniqueId;
     text: string;
     title: string;
     isDone: boolean;
@@ -9,10 +11,11 @@ export type TTrackedItemTextFragmentState = {
 
 export class TrackedItemTextFragment {
     constructor(
+        readonly id: TUniqueId,
         private text: string,
         private title: string = '',
         private isDone: boolean = false,
-        private lastReviewedAt: ReviewedAt | null = null
+        private lastReviewedAt: ReviewedAt | null = null,
     ) {}
 
     // ---------- Текст ---------
@@ -67,6 +70,7 @@ export class TrackedItemTextFragment {
 
     getState(): TTrackedItemTextFragmentState {
         return {
+            id: this.id,
             text: this.text,
             title: this.title,
             isDone: this.isDone,
@@ -74,14 +78,15 @@ export class TrackedItemTextFragment {
         };
     }
 
-    static fromState (state: TTrackedItemTextFragmentState): TrackedItemTextFragment {
+    static fromState(state: TTrackedItemTextFragmentState): TrackedItemTextFragment {
         return new TrackedItemTextFragment(
+            state.id,
             state.text,
             state.title,
             state.isDone,
             state.lastReviewedAt === null
                 ? null
-                : ReviewedAt.fromState(state.lastReviewedAt)
+                : ReviewedAt.fromState(state.lastReviewedAt),
         );
     }
 }

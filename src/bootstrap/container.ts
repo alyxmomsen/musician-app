@@ -49,7 +49,11 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     const tagsRepo = new JsonTagsRepo(config.tagsPath);
 
     const toggleFragmentUseCase = new ToggleFragmentUseCase(setListRepo);
-    const orchestrator = new MainOrchestrator(setListRepo, toggleFragmentUseCase);
+    const orchestrator = new MainOrchestrator(
+        setListRepo,
+        toggleFragmentUseCase,
+        uniqueIdGenerator
+    );
     const setListController = new TrackedItemsListController(orchestrator);
 
     const commentsOrchestrator = new CommentsOrchestrator(
@@ -84,15 +88,6 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
             { artistName: 'Placebo', title: 'The Bitter End', fragments: [] },
             { artistName: 'Placebo', title: 'Every Me Every You', fragments: [] },
             { artistName: 'Placebo', title: 'Special Needs', fragments: [] },
-            {
-                artistName: 'Placebo',
-                title: 'This Picture',
-                fragments: [
-                    { text: 'Farewell the ashtray girl', title: '', isDone: false, lastReviewedAt: null },
-                    { text: 'Forbidden snowflake', title: '', isDone: false, lastReviewedAt: null },
-                    { text: 'Beware this troubled world', title: '', isDone: false, lastReviewedAt: null },
-                ],
-            },
         ]);
     }
 
