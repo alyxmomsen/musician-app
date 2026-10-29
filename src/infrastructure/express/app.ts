@@ -6,9 +6,13 @@ import { TrackedItemsListController } from '../../presentation/controllers/track
 import { CommentsController } from '../../presentation/controllers/comments.controller';
 import { createCommentsRouter } from './routes/comments.routes';
 
+import { TagsController } from '../../presentation/controllers/tags.controller';
+import { createTagsRouter } from './routes/tags.routes';
+
 export function createApp(
     listItemController: TrackedItemsListController,
-    commentsController: CommentsController
+    commentsController: CommentsController,
+    tagsController: TagsController
 ) {
     const app = express();
 
@@ -17,6 +21,10 @@ export function createApp(
 
     app.use('/api/tracked-items', createTrackedItemsListRouter(listItemController));
     app.use('/api/comments', createCommentsRouter(commentsController));
+
+    app.use('/api/comments', createCommentsRouter(commentsController));
+    app.use('/api/tags', createTagsRouter(tagsController));
+
     app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
     app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

@@ -6,6 +6,7 @@ const appConfig: AppConfig = {
     trackedItemsPath: './src/tracked-items.json',
     commentsPath: './src/comments.json',
     tagLinksPath: './src/tag-links.json',
+    tagsPath: './src/tags.json',
 };
 
 const bootstrapFactory = function (
@@ -17,9 +18,9 @@ const bootstrapFactory = function (
 (async (deps: { bootstrap: () => Promise<AppContainer> }) => {
     const appContainer = await deps.bootstrap();
 
-    const { setListController, commentsController } = appContainer;
+    const { setListController, commentsController, tagsController } = appContainer;
 
-    const app = createApp(setListController, commentsController);
+    const app = createApp(setListController, commentsController, tagsController);
 
     app.listen(3000, '0.0.0.0', () => {
         console.log(`express running on port 3000`);

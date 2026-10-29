@@ -13,16 +13,28 @@ import { UniqueIdGenerator } from '../infrastructure/unique-id-generator';
 import { TrackedItemsListController } from '../presentation/controllers/tracked-items-list.controller';
 import { CommentsController } from '../presentation/controllers/comments.controller';
 
+import { TagsOrchestrator } from '../application/tags-orchestrator';
+import { AddTagToTargetUseCase } from '../application/use-cases/tags/add-tag-to-target.use-case';
+import { RemoveTagFromTargetUseCase } from '../application/use-cases/tags/remove-tag-from-target.use-case';
+import { DeleteTagUseCase } from '../application/use-cases/tags/delete-tag.use-case';
+import { GetTagsForTargetUseCase } from '../application/use-cases/tags/get-tags-for-target.use-case';
+import { GetTargetsForTagUseCase } from '../application/use-cases/tags/get-targets-for-tag.use-case';
+import { GetAllTagsUseCase } from '../application/use-cases/tags/get-all-tags.use-case';
+import { JsonTagsRepo } from '../infrastructure/tags-repo';
+import { TagsController } from '../presentation/controllers/tags.controller';
+
 export interface AppConfig {
     trackedItemsPath: string;
     commentsPath: string;
     tagLinksPath: string;
+    tagsPath: string;
 }
 
 export interface AppContainer {
     setListRepo: TrackedItemsListRepo;
     setListController: TrackedItemsListController;
     commentsController: CommentsController;
+    tagsController: TagsController;
 }
 
 export async function bootstrap(config: AppConfig): Promise<AppContainer> {
@@ -34,6 +46,7 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     );
     const commentsRepo = new JsonCommentsRepo(config.commentsPath);
     const tagLinksRepo = new JsonTagLinksRepo(config.tagLinksPath);
+    const tagsRepo = new JsonTagsRepo(config.tagsPath);
 
     const toggleFragmentUseCase = new ToggleFragmentUseCase(setListRepo);
     const orchestrator = new MainOrchestrator(setListRepo, toggleFragmentUseCase);
@@ -46,6 +59,19 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         new GetCommentsByTargetUseCase(commentsRepo),
         new GetCommentsByTrackedItemUseCase(commentsRepo)
     );
+
+    const tagsOrchestrator = new TagsOrchestrator(
+        new AddTagToTargetUseCase(tagsRepo, tagLinksRepo, uniqueIdGenerator),
+        new RemoveTagFromTargetUseCase(tagLinksRepo),
+        new DeleteTagUseCase(tagsRepo, tagLinksRepo),
+        new GetTagsForTargetUseCase(tagsRepo, tagLinksRepo),
+        new GetTargetsForTagUseCase(tagLinksRepo),
+        new GetAllTagsUseCase(tagsRepo)
+    );
+    const tagsController = new TagsController(tagsOrchestrator);
+
+    await tagsRepo.init();
+
     const commentsController = new CommentsController(commentsOrchestrator);
 
     await setListRepo.init();
@@ -70,5 +96,5 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         ]);
     }
 
-    return { setListRepo, setListController, commentsController };
+    return { setListRepo, setListController, commentsController, tagsController  };
 }

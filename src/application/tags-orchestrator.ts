@@ -1,0 +1,44 @@
+import { HashTag } from '../domain/hash-tag';
+import { TTagLinkTarget } from '../domain/tag-link';
+import { AddTagToTargetUseCase } from './use-cases/tags/add-tag-to-target.use-case';
+import { RemoveTagFromTargetUseCase } from './use-cases/tags/remove-tag-from-target.use-case';
+import { DeleteTagUseCase } from './use-cases/tags/delete-tag.use-case';
+import { GetTagsForTargetUseCase } from './use-cases/tags/get-tags-for-target.use-case';
+import { GetTargetsForTagUseCase } from './use-cases/tags/get-targets-for-tag.use-case';
+import { GetAllTagsUseCase } from './use-cases/tags/get-all-tags.use-case';
+
+export class TagsOrchestrator {
+    constructor(
+        private addTagUseCase: AddTagToTargetUseCase,
+        private removeTagUseCase: RemoveTagFromTargetUseCase,
+        private deleteTagUseCase: DeleteTagUseCase,
+        private getTagsForTargetUseCase: GetTagsForTargetUseCase,
+        private getTargetsForTagUseCase: GetTargetsForTagUseCase,
+        private getAllTagsUseCase: GetAllTagsUseCase
+    ) {}
+
+    async add(tagText: string, target: TTagLinkTarget): Promise<{ tag: HashTag }> {
+        const { tag } = await this.addTagUseCase.execute(tagText, target);
+        return { tag };
+    }
+
+    async remove(tagId: string, target: TTagLinkTarget): Promise<void> {
+        return this.removeTagUseCase.execute(tagId, target);
+    }
+
+    async delete(tagId: string): Promise<void> {
+        return this.deleteTagUseCase.execute(tagId);
+    }
+
+    async getForTarget(target: TTagLinkTarget): Promise<HashTag[]> {
+        return this.getTagsForTargetUseCase.execute(target);
+    }
+
+    async getTargetsForTag(tagId: string): Promise<TTagLinkTarget[]> {
+        return this.getTargetsForTagUseCase.execute(tagId);
+    }
+
+    async getAll(): Promise<HashTag[]> {
+        return this.getAllTagsUseCase.execute();
+    }
+}
