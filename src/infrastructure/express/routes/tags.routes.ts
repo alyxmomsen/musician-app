@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { TagsController } from '../../../presentation/controllers/tags.controller';
 
 export function createTagsRouter(controller: TagsController): Router {
-    
     const router = Router();
 
     router.get('/', controller.getAll);

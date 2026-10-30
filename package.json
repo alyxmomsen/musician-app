@@ -1,27 +1,27 @@
 {
-  "name": "admin-business",
-  "version": "1.0.0",
-  "description": "music business (Clean Architecture)",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
-    "dev": "ts-node src/main.ts"
-  },
-  "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "node-notifier": "^10.0.1",
-    "uuid": "^9.0.0"
-  },
-  "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/node": "^20.0.0",
-    "@types/node-notifier": "^8.0.2",
-    "@types/uuid": "^9.0.0",
-    "ts-node": "^10.9.1",
-    "tsx": "^4.23.13",
-    "typescript": "^5.0.0"
-  }
+    "name": "admin-business",
+    "version": "1.0.0",
+    "description": "music business (Clean Architecture)",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/main.js",
+        "dev": "ts-node src/main.ts"
+    },
+    "dependencies": {
+        "cors": "^2.8.6",
+        "express": "^5.2.1",
+        "node-notifier": "^10.0.1",
+        "uuid": "^9.0.0"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.6",
+        "@types/node": "^20.0.0",
+        "@types/node-notifier": "^8.0.2",
+        "@types/uuid": "^9.0.0",
+        "ts-node": "^10.9.1",
+        "tsx": "^4.23.13",
+        "typescript": "^5.0.0"
+    }
 }

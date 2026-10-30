@@ -18,9 +18,14 @@ const bootstrapFactory = function (
 (async (deps: { bootstrap: () => Promise<AppContainer> }) => {
     const appContainer = await deps.bootstrap();
 
-    const { setListController, commentsController, tagsController } = appContainer;
+    const { setListController, commentsController, tagsController } =
+        appContainer;
 
-    const app = createApp(setListController, commentsController, tagsController);
+    const app = createApp(
+        setListController,
+        commentsController,
+        tagsController
+    );
 
     app.listen(3000, '0.0.0.0', () => {
         console.log(`express running on port 3000`);

@@ -51,7 +51,12 @@ export class TrackedItem {
     }
 
     addFragment(
-        input: { id: TUniqueId; text: string; title?: string; isDone?: boolean },
+        input: {
+            id: TUniqueId;
+            text: string;
+            title?: string;
+            isDone?: boolean;
+        },
         position?: number
     ): void {
         this.fragments.add(input, position);
@@ -111,7 +116,10 @@ export class TrackedItem {
         this.fragments.renameTitle(id, title);
     }
 
-    updateFragment(id: TUniqueId, patch: { text?: string; title?: string }): void {
+    updateFragment(
+        id: TUniqueId,
+        patch: { text?: string; title?: string }
+    ): void {
         this.fragments.updateFragment(id, patch);
     }
 }

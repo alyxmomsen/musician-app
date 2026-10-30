@@ -86,7 +86,8 @@ export class JsonTagLinksRepo implements ITagLinksRepo {
         for (const [id, state] of this.items.entries()) {
             const t = state.target;
             if (
-                (t.type === 'tracked-item' && t.trackedItemId === trackedItemId) ||
+                (t.type === 'tracked-item' &&
+                    t.trackedItemId === trackedItemId) ||
                 (t.type === 'fragment' && t.trackedItemId === trackedItemId)
             ) {
                 this.items.delete(id);
@@ -110,7 +111,8 @@ export class JsonTagLinksRepo implements ITagLinksRepo {
         for (const state of this.items.values()) {
             const t = state.target;
             if (
-                (t.type === 'tracked-item' && t.trackedItemId === trackedItemId) ||
+                (t.type === 'tracked-item' &&
+                    t.trackedItemId === trackedItemId) ||
                 (t.type === 'fragment' && t.trackedItemId === trackedItemId)
             ) {
                 result.push(TagLink.fromState(state));

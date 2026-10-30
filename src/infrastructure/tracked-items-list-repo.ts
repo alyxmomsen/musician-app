@@ -11,7 +11,8 @@ import { FragmentList } from '../domain/fragment-list';
 import { TWithId } from '../domain/types/common/with-id';
 
 export class TrackedItemsListRepo implements ITrackedItemsListRepo {
-    private items: Map<TTrackedItemUniqueId, TWithId<TTrackedItemState>> = new Map();
+    private items: Map<TTrackedItemUniqueId, TWithId<TTrackedItemState>> =
+        new Map();
     private readonly path: string;
 
     constructor(
@@ -24,7 +25,9 @@ export class TrackedItemsListRepo implements ITrackedItemsListRepo {
     async init(): Promise<void> {
         try {
             const raw = await readFile(this.path, 'utf-8');
-            const setList = JSON.parse(raw) as { items: TWithId<TTrackedItemState>[] };
+            const setList = JSON.parse(raw) as {
+                items: TWithId<TTrackedItemState>[];
+            };
             setList.items.forEach((item) => {
                 this.items.set(item.id, item);
             });

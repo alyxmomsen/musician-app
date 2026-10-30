@@ -19,7 +19,10 @@ export function createApp(
     app.use(cors());
     app.use(express.json());
 
-    app.use('/api/tracked-items', createTrackedItemsListRouter(listItemController));
+    app.use(
+        '/api/tracked-items',
+        createTrackedItemsListRouter(listItemController)
+    );
     app.use('/api/comments', createCommentsRouter(commentsController));
 
     app.use('/api/comments', createCommentsRouter(commentsController));

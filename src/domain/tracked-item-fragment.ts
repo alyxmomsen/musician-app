@@ -15,7 +15,7 @@ export class TrackedItemTextFragment {
         private text: string,
         private title: string = '',
         private isDone: boolean = false,
-        private lastReviewedAt: ReviewedAt | null = null,
+        private lastReviewedAt: ReviewedAt | null = null
     ) {}
 
     // ---------- Текст ---------
@@ -78,7 +78,9 @@ export class TrackedItemTextFragment {
         };
     }
 
-    static fromState(state: TTrackedItemTextFragmentState): TrackedItemTextFragment {
+    static fromState(
+        state: TTrackedItemTextFragmentState
+    ): TrackedItemTextFragment {
         return new TrackedItemTextFragment(
             state.id,
             state.text,
@@ -86,7 +88,7 @@ export class TrackedItemTextFragment {
             state.isDone,
             state.lastReviewedAt === null
                 ? null
-                : ReviewedAt.fromState(state.lastReviewedAt),
+                : ReviewedAt.fromState(state.lastReviewedAt)
         );
     }
 }

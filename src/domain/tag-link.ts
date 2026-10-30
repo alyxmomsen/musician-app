@@ -40,6 +40,11 @@ export class TagLink {
     }
 
     static fromState(state: TTagLinkState): TagLink {
-        return new TagLink(state.id, state.tagId, state.target, state.createdAt);
+        return new TagLink(
+            state.id,
+            state.tagId,
+            state.target,
+            state.createdAt
+        );
     }
 }

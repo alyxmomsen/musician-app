@@ -37,7 +37,12 @@ export class FragmentList {
     // ---------- Мутации ----------
 
     add(
-        input: { id: TUniqueId; text: string; title?: string; isDone?: boolean },
+        input: {
+            id: TUniqueId;
+            text: string;
+            title?: string;
+            isDone?: boolean;
+        },
         position?: number
     ): void {
         const fragment = new TrackedItemTextFragment(
@@ -79,7 +84,10 @@ export class FragmentList {
         this.getOrThrow(id).setTitle(title);
     }
 
-    updateFragment(id: TUniqueId, patch: { text?: string; title?: string }): void {
+    updateFragment(
+        id: TUniqueId,
+        patch: { text?: string; title?: string }
+    ): void {
         const fragment = this.getOrThrow(id);
         if (patch.text !== undefined) fragment.setText(patch.text);
         if (patch.title !== undefined) fragment.setTitle(patch.title);
@@ -124,7 +132,8 @@ export class FragmentList {
 
         if (indexA === -1) throw new Error(`Fragment ${idA} not found`);
         if (indexB === -1) throw new Error(`Fragment ${idB} not found`);
-        if (indexA === indexB) throw new Error('Cannot merge fragment with itself');
+        if (indexA === indexB)
+            throw new Error('Cannot merge fragment with itself');
         if (Math.abs(indexA - indexB) !== 1) {
             throw new Error('Can only merge adjacent fragments');
         }

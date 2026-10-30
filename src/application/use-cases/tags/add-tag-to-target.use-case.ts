@@ -20,7 +20,9 @@ export class AddTagToTargetUseCase {
             throw new Error('Tag text cannot be empty');
         }
         if (/\s/.test(trimmed)) {
-            throw new Error('Tag text must not contain whitespace; split tags on client');
+            throw new Error(
+                'Tag text must not contain whitespace; split tags on client'
+            );
         }
 
         const normalized = trimmed.toLowerCase();

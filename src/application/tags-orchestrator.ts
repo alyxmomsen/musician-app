@@ -22,7 +22,10 @@ export class TagsOrchestrator {
         private getTagById: GetTagByIdUseCase
     ) {}
 
-    async add(tagText: string, target: TTagLinkTarget): Promise<{ tag: HashTag }> {
+    async add(
+        tagText: string,
+        target: TTagLinkTarget
+    ): Promise<{ tag: HashTag }> {
         const { tag } = await this.addTagUseCase.execute(tagText, target);
         return { tag };
     }
@@ -50,7 +53,8 @@ export class TagsOrchestrator {
     async getForTrackedItem(
         trackedItemId: string
     ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>> {
-        const links = await this.getTagLinksByTrackedItem.execute(trackedItemId);
+        const links =
+            await this.getTagLinksByTrackedItem.execute(trackedItemId);
         const result: Array<{ tag: HashTag; target: TTagLinkTarget }> = [];
         for (const link of links) {
             const tag = await this.getTagById.execute(link.tagId);

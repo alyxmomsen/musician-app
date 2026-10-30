@@ -21,9 +21,8 @@ export class CommentsController {
                     .status(400)
                     .json({ error: 'trackedItemId query is required' });
             }
-            const comments = await this.orchestrator.getByTrackedItem(
-                trackedItemId
-            );
+            const comments =
+                await this.orchestrator.getByTrackedItem(trackedItemId);
             res.json(comments.map((c) => c.getState()));
         } catch (err) {
             next(err);
@@ -74,10 +73,7 @@ export class CommentsController {
             if (typeof text !== 'string' || text.trim() === '') {
                 return res.status(400).json({ error: 'text is required' });
             }
-            const comment = await this.orchestrator.update(
-                req.params.id,
-                text
-            );
+            const comment = await this.orchestrator.update(req.params.id, text);
             if (!comment) {
                 return res.status(404).json({ error: 'Comment not found' });
             }

@@ -76,7 +76,7 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         new GetTargetsForTagUseCase(tagLinksRepo),
         new GetAllTagsUseCase(tagsRepo),
         new GetTagLinksByTrackedItemUseCase(tagLinksRepo),
-        new GetTagByIdUseCase(tagsRepo),
+        new GetTagByIdUseCase(tagsRepo)
     );
     const tagsController = new TagsController(tagsOrchestrator);
 
@@ -100,5 +100,10 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         ]);
     }
 
-    return { setListRepo, setListController, commentsController, tagsController  };
+    return {
+        setListRepo,
+        setListController,
+        commentsController,
+        tagsController,
+    };
 }

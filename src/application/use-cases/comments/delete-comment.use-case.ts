@@ -8,7 +8,10 @@ export class DeleteCommentUseCase {
     ) {}
 
     async execute(id: string): Promise<void> {
-        await this.tagLinksRepo.deleteByTarget({ type: 'comment', commentId: id });
+        await this.tagLinksRepo.deleteByTarget({
+            type: 'comment',
+            commentId: id,
+        });
         await this.commentsRepo.delete(id);
     }
 }

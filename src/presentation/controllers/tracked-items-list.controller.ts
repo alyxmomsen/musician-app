@@ -84,13 +84,17 @@ export class TrackedItemsListController {
             };
 
             if (typeof artistName !== 'string' || artistName.trim() === '') {
-                return res.status(400).json({ error: 'artistName is required' });
+                return res
+                    .status(400)
+                    .json({ error: 'artistName is required' });
             }
             if (typeof title !== 'string' || title.trim() === '') {
                 return res.status(400).json({ error: 'title is required' });
             }
             if (!Array.isArray(fragments)) {
-                return res.status(400).json({ error: 'fragments must be an array' });
+                return res
+                    .status(400)
+                    .json({ error: 'fragments must be an array' });
             }
 
             const normalizedFragments = fragments.map((f, i) => {
@@ -135,7 +139,9 @@ export class TrackedItemsListController {
             };
 
             if (typeof artistName !== 'string' || artistName.trim() === '') {
-                return res.status(400).json({ error: 'artistName is required' });
+                return res
+                    .status(400)
+                    .json({ error: 'artistName is required' });
             }
             if (typeof title !== 'string' || title.trim() === '') {
                 return res.status(400).json({ error: 'title is required' });
@@ -213,7 +219,9 @@ export class TrackedItemsListController {
         try {
             const { fragmentId } = req.params;
             if (!fragmentId) {
-                return res.status(400).json({ error: 'fragmentId is required' });
+                return res
+                    .status(400)
+                    .json({ error: 'fragmentId is required' });
             }
 
             const updated = await this.orchestrator.removeFragment(
@@ -244,10 +252,14 @@ export class TrackedItemsListController {
             const { done } = req.body as { done: boolean };
 
             if (!fragmentId) {
-                return res.status(400).json({ error: 'fragmentId is required' });
+                return res
+                    .status(400)
+                    .json({ error: 'fragmentId is required' });
             }
             if (typeof done !== 'boolean') {
-                return res.status(400).json({ error: 'done must be a boolean' });
+                return res
+                    .status(400)
+                    .json({ error: 'done must be a boolean' });
             }
 
             const updated = await this.orchestrator.toggleFragment(
@@ -290,7 +302,9 @@ export class TrackedItemsListController {
         try {
             const { id, fragmentId } = req.params;
             if (!fragmentId) {
-                return res.status(400).json({ error: 'fragmentId is required' });
+                return res
+                    .status(400)
+                    .json({ error: 'fragmentId is required' });
             }
 
             const updated = await this.orchestrator.markFragmentReviewed(
@@ -325,7 +339,9 @@ export class TrackedItemsListController {
             };
 
             if (!fragmentId) {
-                return res.status(400).json({ error: 'fragmentId is required' });
+                return res
+                    .status(400)
+                    .json({ error: 'fragmentId is required' });
             }
             if (text === undefined && title === undefined) {
                 return res.status(400).json({
@@ -336,7 +352,9 @@ export class TrackedItemsListController {
                 return res.status(400).json({ error: 'text must be a string' });
             }
             if (title !== undefined && typeof title !== 'string') {
-                return res.status(400).json({ error: 'title must be a string' });
+                return res
+                    .status(400)
+                    .json({ error: 'title must be a string' });
             }
 
             const patch: { text?: string; title?: string } = {};

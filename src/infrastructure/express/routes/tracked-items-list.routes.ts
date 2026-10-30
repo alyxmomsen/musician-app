@@ -17,7 +17,10 @@ export function createTrackedItemsListRouter(
 
     // PATCH-роуты: сначала более специфичные, потом общий
     router.patch('/:id/fragments/:fragmentId/done', controller.toggleFragment);
-    router.patch('/:id/fragments/:fragmentId/review', controller.markFragmentReviewed);
+    router.patch(
+        '/:id/fragments/:fragmentId/review',
+        controller.markFragmentReviewed
+    );
     router.patch('/:id/fragments/:fragmentId', controller.updateFragment);
 
     return router;

@@ -22,7 +22,9 @@ export class TagsController {
         try {
             const target = req.body.target as TTagLinkTarget | undefined;
             if (!target || typeof target !== 'object' || !target.type) {
-                return res.status(400).json({ error: 'target is required in body' });
+                return res
+                    .status(400)
+                    .json({ error: 'target is required in body' });
             }
             const tags = await this.orchestrator.getForTarget(target);
             res.json(tags.map((t) => t.getState()));
@@ -37,7 +39,9 @@ export class TagsController {
         next: NextFunction
     ) => {
         try {
-            const targets = await this.orchestrator.getTargetsForTag(req.params.id);
+            const targets = await this.orchestrator.getTargetsForTag(
+                req.params.id
+            );
             res.json(targets);
         } catch (err) {
             next(err);
@@ -106,7 +110,9 @@ export class TagsController {
         next: NextFunction
     ) => {
         try {
-            const result = await this.orchestrator.getForTrackedItem(req.params.id);
+            const result = await this.orchestrator.getForTrackedItem(
+                req.params.id
+            );
             res.json(
                 result.map((r) => ({
                     tag: r.tag.getState(),
