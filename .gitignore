@@ -5,3 +5,7 @@ src/tracked-items.json
 src/tag-links.json
 src/tags.json
 src/tracked-items.json
+src/users.json
+src/credentials.json
+src/profiles.json
+.env

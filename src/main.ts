@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { AppConfig, AppContainer, bootstrap } from './bootstrap/container';
 import { createApp } from './infrastructure/express/app';
 import { Loop } from './infrastructure/loop';
@@ -7,6 +9,9 @@ const appConfig: AppConfig = {
     commentsPath: './src/comments.json',
     tagLinksPath: './src/tag-links.json',
     tagsPath: './src/tags.json',
+    usersPath: './src/users.json',
+    credentialsPath: './src/credentials.json',
+    profilesPath: './src/profiles.json',
 };
 
 const bootstrapFactory = function (
@@ -18,14 +23,9 @@ const bootstrapFactory = function (
 (async (deps: { bootstrap: () => Promise<AppContainer> }) => {
     const appContainer = await deps.bootstrap();
 
-    const { setListController, commentsController, tagsController } =
-        appContainer;
+    const { setListController, commentsController, tagsController } = appContainer;
 
-    const app = createApp(
-        setListController,
-        commentsController,
-        tagsController
-    );
+    const app = createApp(setListController, commentsController, tagsController);
 
     app.listen(3000, '0.0.0.0', () => {
         console.log(`express running on port 3000`);

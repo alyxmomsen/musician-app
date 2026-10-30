@@ -1,35 +1,44 @@
+import 'dotenv/config';
+
 import { MainOrchestrator } from '../application/main-orchestrator';
 import { CommentsOrchestrator } from '../application/comments-orchestrator';
+import { TagsOrchestrator } from '../application/tags-orchestrator';
 import { ToggleFragmentUseCase } from '../application/use-cases/toggle-fragment-use-case';
 import { AddCommentUseCase } from '../application/use-cases/comments/add-comment.use-case';
 import { UpdateCommentUseCase } from '../application/use-cases/comments/update-comment.use-case';
 import { DeleteCommentUseCase } from '../application/use-cases/comments/delete-comment.use-case';
 import { GetCommentsByTargetUseCase } from '../application/use-cases/comments/get-comments-by-target.use-case';
 import { GetCommentsByTrackedItemUseCase } from '../application/use-cases/comments/get-comments-by-tracked-item.use-case';
-import { TrackedItemsListRepo } from '../infrastructure/tracked-items-list-repo';
-import { JsonCommentsRepo } from '../infrastructure/comments-repo';
-import { JsonTagLinksRepo } from '../infrastructure/tag-links-repo';
-import { UniqueIdGenerator } from '../infrastructure/unique-id-generator';
-import { TrackedItemsListController } from '../presentation/controllers/tracked-items-list.controller';
-import { CommentsController } from '../presentation/controllers/comments.controller';
-
-import { TagsOrchestrator } from '../application/tags-orchestrator';
 import { AddTagToTargetUseCase } from '../application/use-cases/tags/add-tag-to-target.use-case';
 import { RemoveTagFromTargetUseCase } from '../application/use-cases/tags/remove-tag-from-target.use-case';
 import { DeleteTagUseCase } from '../application/use-cases/tags/delete-tag.use-case';
 import { GetTagsForTargetUseCase } from '../application/use-cases/tags/get-tags-for-target.use-case';
 import { GetTargetsForTagUseCase } from '../application/use-cases/tags/get-targets-for-tag.use-case';
 import { GetAllTagsUseCase } from '../application/use-cases/tags/get-all-tags.use-case';
-import { JsonTagsRepo } from '../infrastructure/tags-repo';
-import { TagsController } from '../presentation/controllers/tags.controller';
 import { GetTagLinksByTrackedItemUseCase } from '../application/use-cases/tags/get-tag-links-by-tracked-item.use-case';
 import { GetTagByIdUseCase } from '../application/use-cases/tags/get-tag-by-id.use-case';
+import { TrackedItemsListRepo } from '../infrastructure/tracked-items-list-repo';
+import { JsonCommentsRepo } from '../infrastructure/comments-repo';
+import { JsonTagLinksRepo } from '../infrastructure/tag-links-repo';
+import { JsonTagsRepo } from '../infrastructure/tags-repo';
+import { JsonUsersRepo } from '../infrastructure/users-repo';
+import { JsonCredentialsRepo } from '../infrastructure/credentials-repo';
+import { JsonUserProfilesRepo } from '../infrastructure/user-profiles-repo';
+import { BcryptPasswordHasher } from '../infrastructure/bcrypt-password-hasher';
+import { UniqueIdGenerator } from '../infrastructure/unique-id-generator';
+import { TrackedItemsListController } from '../presentation/controllers/tracked-items-list.controller';
+import { CommentsController } from '../presentation/controllers/comments.controller';
+import { TagsController } from '../presentation/controllers/tags.controller';
+import { User } from '../domain/user';
 
 export interface AppConfig {
     trackedItemsPath: string;
     commentsPath: string;
     tagLinksPath: string;
     tagsPath: string;
+    usersPath: string;
+    credentialsPath: string;
+    profilesPath: string;
 }
 
 export interface AppContainer {
@@ -41,6 +50,9 @@ export interface AppContainer {
 
 export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     const uniqueIdGenerator = new UniqueIdGenerator();
+    const passwordHasher = new BcryptPasswordHasher();
+
+    // ---------- Репозитории ----------
 
     const setListRepo = new TrackedItemsListRepo(
         uniqueIdGenerator,
@@ -49,6 +61,11 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     const commentsRepo = new JsonCommentsRepo(config.commentsPath);
     const tagLinksRepo = new JsonTagLinksRepo(config.tagLinksPath);
     const tagsRepo = new JsonTagsRepo(config.tagsPath);
+    const usersRepo = new JsonUsersRepo(config.usersPath);
+    const credentialsRepo = new JsonCredentialsRepo(config.credentialsPath);
+    const profilesRepo = new JsonUserProfilesRepo(config.profilesPath);
+
+    // ---------- Use cases: tracked items ----------
 
     const toggleFragmentUseCase = new ToggleFragmentUseCase(setListRepo);
     const orchestrator = new MainOrchestrator(
@@ -60,6 +77,8 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     );
     const setListController = new TrackedItemsListController(orchestrator);
 
+    // ---------- Use cases: comments ----------
+
     const commentsOrchestrator = new CommentsOrchestrator(
         new AddCommentUseCase(commentsRepo, uniqueIdGenerator),
         new UpdateCommentUseCase(commentsRepo),
@@ -67,6 +86,9 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         new GetCommentsByTargetUseCase(commentsRepo),
         new GetCommentsByTrackedItemUseCase(commentsRepo)
     );
+    const commentsController = new CommentsController(commentsOrchestrator);
+
+    // ---------- Use cases: tags ----------
 
     const tagsOrchestrator = new TagsOrchestrator(
         new AddTagToTargetUseCase(tagsRepo, tagLinksRepo, uniqueIdGenerator),
@@ -80,13 +102,17 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     );
     const tagsController = new TagsController(tagsOrchestrator);
 
-    await tagsRepo.init();
-
-    const commentsController = new CommentsController(commentsOrchestrator);
+    // ---------- Init ----------
 
     await setListRepo.init();
     await commentsRepo.init();
     await tagLinksRepo.init();
+    await tagsRepo.init();
+    await usersRepo.init();
+    await credentialsRepo.init();
+    await profilesRepo.init();
+
+    // ---------- Seed: tracked items ----------
 
     const existing = await setListRepo.getAll();
     if (existing.length === 0) {
@@ -100,10 +126,24 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         ]);
     }
 
-    return {
-        setListRepo,
-        setListController,
-        commentsController,
-        tagsController,
-    };
+    // ---------- Seed: admin ----------
+
+    const userCount = await usersRepo.count();
+    if (userCount === 0) {
+        const adminId = uniqueIdGenerator.generate();
+        const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@example.com';
+        const adminPassword = process.env.ADMIN_PASSWORD ?? 'changeme';
+        const adminDisplayName = process.env.ADMIN_DISPLAYNAME ?? 'Admin';
+
+        const passwordHash = await passwordHasher.hash(adminPassword);
+        const admin = new User(adminId, 'admin', 'active', Date.now());
+
+        await usersRepo.create(admin);
+        await credentialsRepo.save(adminId, adminEmail, passwordHash);
+        await profilesRepo.save(adminId, adminDisplayName);
+
+        console.log(`[seed] admin created: ${adminEmail} / displayName: ${adminDisplayName}`);
+    }
+
+    return { setListRepo, setListController, commentsController, tagsController };
 }
