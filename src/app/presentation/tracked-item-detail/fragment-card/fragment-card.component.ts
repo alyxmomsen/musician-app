@@ -12,6 +12,8 @@ import { MenuItem } from 'primeng/api';
 import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tracked-item-text-fragment.entity';
 import { Comment } from '../../../domain/comment/models/comment.entity';
 
+import { TagChipsComponent } from '../../shared/tag-chips/tag-chips.component';
+
 @Component({
   selector: 'app-fragment-card',
   standalone: true,
@@ -25,6 +27,8 @@ import { Comment } from '../../../domain/comment/models/comment.entity';
     TooltipModule,
     InputTextModule,
     TextareaModule,
+
+    TagChipsComponent,
   ],
   templateUrl: './fragment-card.component.html',
   styleUrls: ['./fragment-card.component.scss'],
@@ -32,6 +36,7 @@ import { Comment } from '../../../domain/comment/models/comment.entity';
 export class FragmentCardComponent {
   @Input({ required: true }) fragment!: TrackedItemTextFragment;
   @Input() comments: Comment[] = [];
+  @Input({ required: true }) trackedItemId!: string;
 
   @Output() toggleDone = new EventEmitter<{ fragmentId: string; done: boolean }>();
   @Output() markReviewed = new EventEmitter<string>();
@@ -100,7 +105,7 @@ export class FragmentCardComponent {
   }
 
   formatReviewDate(timestamp: number | null): string {
-    if (timestamp === null) return 'Никогда';
+    if (timestamp === null) return 'never';
     const diff = Date.now() - timestamp;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return 'Сегодня';

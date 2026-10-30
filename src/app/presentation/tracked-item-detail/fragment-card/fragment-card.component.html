@@ -39,12 +39,12 @@
           (ngModelChange)="onToggleDone($event)"
           [inputId]="'frag-done-' + fragment.id"
         />
-        <label [for]="'frag-done-' + fragment.id" class="done-label">Выучено</label>
+        <label [for]="'frag-done-' + fragment.id" class="done-label">done</label>
       </div>
 
       <div class="footer-right">
         <span class="review-date">
-          Повторял: {{ formatReviewDate(fragment.lastReviewedAt) }}
+          repeated at: {{ formatReviewDate(fragment.lastReviewedAt) }}
         </span>
         <p-button
           icon="pi pi-refresh"
@@ -56,7 +56,6 @@
       </div>
     </div>
 
-    <!-- БЛОК КОММЕНТАРИЕВ: внутри @if (!isEditing()), после fragment-footer -->
     @if (comments.length > 0) {
       <div class="fragment-comments">
         @for (comment of comments; track comment.id) {
@@ -79,6 +78,10 @@
       </div>
     }
     <!-- КОНЕЦ БЛОКА КОММЕНТАРИЕВ -->
+
+    <app-tag-chips
+      [target]="{ type: 'fragment', trackedItemId: trackedItemId, fragmentId: fragment.id }"
+    />
 
   } @else {
     <div class="edit-form">

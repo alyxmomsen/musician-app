@@ -31,6 +31,8 @@ import { Comment } from '../../domain/comment/models/comment.entity';
 import { SelectionService } from '../../core/services/selection.service';
 import { FragmentCardComponent } from './fragment-card/fragment-card.component';
 
+import { TagChipsComponent } from '../shared/tag-chips/tag-chips.component';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -44,6 +46,8 @@ import { FragmentCardComponent } from './fragment-card/fragment-card.component';
     CheckboxModule,
     InputTextModule,
     FragmentCardComponent,
+
+    TagChipsComponent,
   ],
   templateUrl: './tracked-item-detail.component.html',
   styleUrls: ['./tracked-item-detail.component.scss'],

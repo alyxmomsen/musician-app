@@ -18,7 +18,7 @@ export class TrackedItem {
   }
 
   get progress(): number {
-    return this._progress;
+    return Math.floor(this._progress);
   }
 
   get fragments(): TrackedItemTextFragment[] {

@@ -28,7 +28,7 @@ export class TrackedItemListComponent implements OnInit {
   items = signal<TrackedItem[]>([]);
   total = signal(0);
   page = signal(1);
-  limit = 20;
+  limit = /* 20 */5;
   loading = signal(false);
 
   menuItems: MenuItem[] = [];

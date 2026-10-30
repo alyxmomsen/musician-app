@@ -40,6 +40,10 @@
       </div>
     </div>
 
+    <div class="item-tags">
+      <app-tag-chips [target]="{ type: 'tracked-item', trackedItemId: id }" />
+    </div>
+
     @if (commentsForItem().length > 0) {
       <details class="item-comments">
         <summary>{{ commentsForItem().length }} комментариев к треку</summary>
@@ -69,6 +73,7 @@
         <div [attr.data-fragment-id]="fragment.id">
           <app-fragment-card
             [fragment]="fragment"
+            [trackedItemId]="id"
             [comments]="commentsForFragment(fragment.id)"
             (toggleDone)="onToggleDone($event)"
             (markReviewed)="onMarkReviewed($event)"
