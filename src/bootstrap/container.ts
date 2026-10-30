@@ -31,6 +31,13 @@ import { CommentsController } from '../presentation/controllers/comments.control
 import { TagsController } from '../presentation/controllers/tags.controller';
 import { User } from '../domain/user';
 
+import { JwtTokenProvider } from '../infrastructure/jwt-token-provider';
+import { RegisterUserUseCase } from '../application/use-cases/auth/register-user.use-case';
+import { LoginUserUseCase } from '../application/use-cases/auth/login-user.use-case';
+import { AuthController } from '../presentation/controllers/auth.controller';
+import { createAuthMiddleware } from '../infrastructure/express/middleware/auth.middleware';
+import { RequestHandler } from 'express';
+
 export interface AppConfig {
     trackedItemsPath: string;
     commentsPath: string;
@@ -46,6 +53,8 @@ export interface AppContainer {
     setListController: TrackedItemsListController;
     commentsController: CommentsController;
     tagsController: TagsController;
+    authController: AuthController;
+    authMiddleware: RequestHandler;
 }
 
 export async function bootstrap(config: AppConfig): Promise<AppContainer> {
@@ -126,6 +135,36 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         ]);
     }
 
+
+
+
+    const jwtSecret = process.env.JWT_SECRET ?? 'dev-secret-change-me';
+    const tokenProvider = new JwtTokenProvider(
+        jwtSecret,
+        process.env.JWT_EXPIRES_IN ?? '7d'
+    );
+
+    const registerUserUseCase = new RegisterUserUseCase(
+        usersRepo,
+        credentialsRepo,
+        profilesRepo,
+        passwordHasher,
+        uniqueIdGenerator
+    );
+    const loginUserUseCase = new LoginUserUseCase(
+        usersRepo,
+        credentialsRepo,
+        profilesRepo,
+        passwordHasher,
+        tokenProvider
+    );
+    const authController = new AuthController(registerUserUseCase, loginUserUseCase);
+    const authMiddleware = createAuthMiddleware(tokenProvider);
+
+
+
+
+
     // ---------- Seed: admin ----------
 
     const userCount = await usersRepo.count();
@@ -145,5 +184,12 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         console.log(`[seed] admin created: ${adminEmail} / displayName: ${adminDisplayName}`);
     }
 
-    return { setListRepo, setListController, commentsController, tagsController };
+    return {
+        setListRepo,
+        setListController,
+        commentsController,
+        tagsController,
+        authController,
+        authMiddleware,
+    };
 }
