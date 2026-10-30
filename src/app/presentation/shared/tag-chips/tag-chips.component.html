@@ -15,7 +15,7 @@
   @if (!adding()) {
     <button type="button" class="tag-add" (click)="startAdd()">
       <i class="pi pi-plus"></i>
-      <span>Тег</span>
+      <span>add tag</span>
     </button>
   } @else {
     <input
@@ -24,7 +24,7 @@
       [ngModel]="newTagText()"
       (ngModelChange)="newTagText.set($event)"
       (keydown)="onKeydown($event)"
-      placeholder="тег (пробел — разделитель)"
+      placeholder="tag (whitespace — separator)"
       class="tag-input"
       autofocus
     />
