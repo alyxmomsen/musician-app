@@ -16,11 +16,16 @@ import { TAGS_REPOSITORY_TOKEN } from './core/tokens/tags-repository.token';
 import { HttpCommentsRepository } from './infrastructure/comment/http-comments.repository';
 import { HttpTagsRepository } from './infrastructure/tag/http-tags.repository';
 
+import { withInterceptors } from '@angular/common/http';
+import { AUTH_REPOSITORY_TOKEN } from './core/tokens/auth-repository.token';
+import { HttpAuthRepository } from './infrastructure/auth/http-auth.repository';
+import { authInterceptor } from './infrastructure/auth/auth.interceptor';
+
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     providePrimeNG({ theme: { preset: Aura } }),
     MessageService,
     ConfirmationService,
@@ -35,6 +40,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: TAGS_REPOSITORY_TOKEN,
       useClass: HttpTagsRepository,
+    },
+    {
+      provide: AUTH_REPOSITORY_TOKEN,
+      useClass: HttpAuthRepository,
     },
   ],
 };

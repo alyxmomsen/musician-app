@@ -1,0 +1,43 @@
+<div class="login-page">
+  <div class="login-card">
+    <h1>Вход</h1>
+
+    @if (error()) {
+      <p-message severity="error">{{ error() }}</p-message>
+    }
+
+    <label class="field">
+      <span>Email</span>
+      <input
+        pInputText
+        type="email"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+        (keydown)="onKeydown($event)"
+        placeholder="you@example.com"
+        autofocus
+      />
+    </label>
+
+    <label class="field">
+      <span>Пароль</span>
+      <input
+        pInputText
+        type="password"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+        (keydown)="onKeydown($event)"
+        placeholder="••••••"
+      />
+    </label>
+
+    <p-button
+      label="Войти"
+      icon="pi pi-sign-in"
+      [loading]="loading()"
+      [disabled]="!email().trim() || !password()"
+      (onClick)="submit()"
+      styleClass="login-button"
+    />
+  </div>
+</div>
