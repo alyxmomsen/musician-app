@@ -33,6 +33,8 @@ import { FragmentCardComponent } from './fragment-card/fragment-card.component';
 
 import { TagChipsComponent } from '../shared/tag-chips/tag-chips.component';
 
+import { AuthService } from '../../core/services/auth.service';
+
 import {
   UserProfilesRepositoryPort,
   TUserProfile,
@@ -115,6 +117,7 @@ export class TrackedItemDetailComponent implements OnInit {
     private addComment: AddCommentUseCase,
     private deleteComment: DeleteCommentUseCase,
     private getCommentsByTrackedItem: GetCommentsByTrackedItemUseCase,
+    private auth: AuthService,
 
     @Inject(USER_PROFILES_REPOSITORY_TOKEN)
     private readonly profilesRepo: UserProfilesRepositoryPort,
@@ -377,6 +380,15 @@ export class TrackedItemDetailComponent implements OnInit {
         quote: pending.quote,
       });
       this.comments.update((list) => [...list, comment]);
+
+      // текущий пользователь уже известен — без HTTP
+      const me = this.auth.user();
+      if (me) {
+        const next = new Map(this.profiles());
+        next.set(me.id, { userId: me.id, displayName: me.displayName });
+        this.profiles.set(next);
+      }
+
       this.cancelCommentDialog();
     } catch (err) {
       console.error('Add comment failed:', err);

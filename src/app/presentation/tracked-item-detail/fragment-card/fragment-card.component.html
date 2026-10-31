@@ -1,4 +1,10 @@
-<div class="fragment-card" [class.done]="fragment.isDone">
+<div
+  #cardRoot
+  class="fragment-card"
+  [class.done]="fragment.isDone"
+  (mousemove)="onCardMouseMove($event)"
+  (mouseleave)="onCardMouseLeave()"
+>
   @if (!isEditing()) {
     <div class="fragment-header">
       @if (fragment.title) {
@@ -17,17 +23,19 @@
 
     @if (!isExpanded()) {
       <div
+        #fragmentText
         ngxClamp
         [lines]="3"
         class="fragment-text clamped"
         [textContent]="fragment.text"
-        (click)="toggleExpand()"
+        (click)="onTextClick($event)"
       ></div>
     } @else {
       <div
+        #fragmentText
         class="fragment-text expanded"
         [textContent]="fragment.text"
-        (click)="toggleExpand()"
+        (click)="onTextClick($event)"
       ></div>
     }
 
@@ -39,12 +47,12 @@
           (ngModelChange)="onToggleDone($event)"
           [inputId]="'frag-done-' + fragment.id"
         />
-        <label [for]="'frag-done-' + fragment.id" class="done-label">done</label>
+        <label [for]="'frag-done-' + fragment.id" class="done-label">Выучено</label>
       </div>
 
       <div class="footer-right">
         <span class="review-date">
-          repeated at: {{ formatReviewDate(fragment.lastReviewedAt) }}
+          Повторял: {{ formatReviewDate(fragment.lastReviewedAt) }}
         </span>
         <p-button
           icon="pi pi-refresh"
@@ -59,7 +67,13 @@
     @if (comments.length > 0) {
       <div class="fragment-comments">
         @for (comment of comments; track comment.id) {
-          <div class="fragment-comment">
+          <div
+            class="fragment-comment"
+            [attr.data-comment-id]="comment.id"
+            (click)="onCommentClick(comment.id, $event)"
+            (mouseenter)="onCommentHover(comment.id)"
+            (mouseleave)="onCommentLeave()"
+          >
             <div class="comment-body">
               <div class="comment-main">
                 <span class="comment-text">{{ comment.text }}</span>
@@ -70,19 +84,36 @@
                 [text]="true"
                 severity="danger"
                 size="small"
-                (onClick)="deleteComment.emit(comment.id)"
+                styleClass="comment-delete-btn"
+                (onClick)="deleteComment.emit(comment.id); $event.stopPropagation()"
               />
             </div>
           </div>
         }
       </div>
     }
-    <!-- КОНЕЦ БЛОКА КОММЕНТАРИЕВ -->
 
-    <app-tag-chips
-      [target]="{ type: 'fragment', trackedItemId: trackedItemId, fragmentId: fragment.id }"
-    />
-
+    @if (popup(); as p) {
+      <div
+        class="annotation-popup"
+        [style.left.px]="p.x"
+        [style.top.px]="p.y"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="popup-header">
+          <span>Аннотации</span>
+          <button class="popup-close" (click)="closePopup()">×</button>
+        </div>
+        @for (id of p.commentIds; track id) {
+          @if (getCommentById(id); as c) {
+            <div class="popup-item" (click)="selectFromPopup(c.id)">
+              <span class="popup-text">{{ c.text }}</span>
+              <span class="popup-author">{{ getAuthorName(c.authorId) }}</span>
+            </div>
+          }
+        }
+      </div>
+    }
   } @else {
     <div class="edit-form">
       <input

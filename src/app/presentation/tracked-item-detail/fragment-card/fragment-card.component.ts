@@ -1,4 +1,17 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  signal,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxClamp } from '@chitovas/ngx-clamp';
 import { ButtonModule } from 'primeng/button';
@@ -11,10 +24,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { MenuItem } from 'primeng/api';
 import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tracked-item-text-fragment.entity';
 import { Comment } from '../../../domain/comment/models/comment.entity';
-
-import { TagChipsComponent } from '../../shared/tag-chips/tag-chips.component';
-
 import { TUserProfile } from '../../../domain/user/ports/user-profiles.repository.port';
+import { AnnotationHighlighterService } from '../../../core/services/annotation-highlighter.service';
 
 @Component({
   selector: 'app-fragment-card',
@@ -29,16 +40,17 @@ import { TUserProfile } from '../../../domain/user/ports/user-profiles.repositor
     TooltipModule,
     InputTextModule,
     TextareaModule,
-
-    TagChipsComponent,
   ],
   templateUrl: './fragment-card.component.html',
   styleUrls: ['./fragment-card.component.scss'],
+  providers: [AnnotationHighlighterService], // ← per-component instance
 })
-export class FragmentCardComponent {
+export class FragmentCardComponent
+  implements AfterViewInit, OnChanges, OnDestroy
+{
   @Input({ required: true }) fragment!: TrackedItemTextFragment;
-  @Input() comments: Comment[] = [];
   @Input({ required: true }) trackedItemId!: string;
+  @Input() comments: Comment[] = [];
   @Input() profiles: Map<string, TUserProfile> = new Map();
 
   @Output() toggleDone = new EventEmitter<{ fragmentId: string; done: boolean }>();
@@ -58,18 +70,36 @@ export class FragmentCardComponent {
   editText = signal('');
   saving = signal(false);
 
+  @ViewChild('fragmentText') fragmentText?: ElementRef<HTMLElement>;
+
+  popup = signal<{ x: number; y: number; commentIds: string[] } | null>(null);
+
+  private lastCommentsKey = '';
+
   menuItems: MenuItem[] = [
-    {
-      label: 'Редактировать',
-      icon: 'pi pi-pencil',
-      command: () => this.startEdit(),
-    },
-    {
-      label: 'Удалить',
-      icon: 'pi pi-trash',
-      command: () => this.delete.emit(this.fragment.id),
-    },
+    { label: 'Редактировать', icon: 'pi pi-pencil', command: () => this.startEdit() },
+    { label: 'Удалить', icon: 'pi pi-trash', command: () => this.delete.emit(this.fragment.id) },
   ];
+
+  constructor(private highlighter: AnnotationHighlighterService) {}
+
+  ngAfterViewInit(): void {
+    this.applyHighlight();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const c = changes['comments'];
+    if (!c) return;
+    const key = this.commentsKey(this.comments);
+    if (key !== this.lastCommentsKey) {
+      this.lastCommentsKey = key;
+      setTimeout(() => this.applyHighlight(), 0);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.highlighter.clear();
+  }
 
   onToggleDone(done: boolean): void {
     this.toggleDone.emit({ fragmentId: this.fragment.id, done });
@@ -81,6 +111,8 @@ export class FragmentCardComponent {
 
   toggleExpand(): void {
     this.isExpanded.update((v) => !v);
+    // после смены DOM (clamped → expanded) viewchild обновится, ranges надо пересоздать
+    setTimeout(() => this.applyHighlight(), 0);
   }
 
   startEdit(): void {
@@ -88,10 +120,12 @@ export class FragmentCardComponent {
     this.editText.set(this.fragment.text);
     this.isEditing.set(true);
     this.isExpanded.set(true);
+    this.highlighter.clear();
   }
 
   cancelEdit(): void {
     this.isEditing.set(false);
+    setTimeout(() => this.applyHighlight(), 0);
   }
 
   submitEdit(): void {
@@ -108,7 +142,7 @@ export class FragmentCardComponent {
   }
 
   formatReviewDate(timestamp: number | null): string {
-    if (timestamp === null) return 'never';
+    if (timestamp === null) return 'Никогда';
     const diff = Date.now() - timestamp;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return 'Сегодня';
@@ -119,5 +153,104 @@ export class FragmentCardComponent {
 
   getAuthorName(authorId: string): string {
     return this.profiles.get(authorId)?.displayName ?? 'Неизвестный';
+  }
+
+  onCommentClick(commentId: string, event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!this.isExpanded()) {
+      // разворачиваем и ждём, пока Angular отрисует DOM
+      this.isExpanded.set(true);
+      setTimeout(() => {
+        this.applyHighlight();
+        setTimeout(() => {
+          this.highlighter.scrollToAnnotation(commentId);
+        }, 0);
+      }, 0);
+      return;
+  }
+
+  this.highlighter.scrollToAnnotation(commentId);
+}
+
+  onCommentHover(commentId: string): void {
+    this.highlighter.setHovered(commentId);
+  }
+
+  onCommentLeave(): void {
+    this.highlighter.setHovered(null);
+  }
+
+  onCardMouseMove(event: MouseEvent): void {
+    const hovered = this.highlighter.hitTest(event.clientX, event.clientY);
+    this.highlighter.setHovered(hovered);
+  }
+
+  onCardMouseLeave(): void {
+    this.highlighter.setHovered(null);
+  }
+
+  onTextClick(event: MouseEvent): void {
+    // если это выделение, а не клик — не переключаем
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) {
+      return;
+    }
+
+    const ids = this.highlighter.getCommentIdsAt(event.clientX, event.clientY);
+    if (ids.length === 0) {
+      this.toggleExpand();
+      return;
+    }
+    this.popup.set({ x: event.clientX, y: event.clientY, commentIds: ids });
+  }
+
+  closePopup(): void {
+    this.popup.set(null);
+  }
+
+  selectFromPopup(commentId: string): void {
+    this.closePopup();
+    this.scrollToCommentInList(commentId);
+  }
+
+  getCommentById(id: string): Comment | undefined {
+    return this.comments.find((c) => c.id === id);
+  }
+
+  private scrollToCommentInList(commentId: string): void {
+    const el = document.querySelector(
+      `[data-comment-id="${commentId}"]`
+    ) as HTMLElement | null;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const inViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+    if (!inViewport) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1200);
+  }
+
+  private commentsKey(comments: Comment[]): string {
+    return comments.map((c) => c.id).join(',');
+  }
+
+  private applyHighlight(): void {
+    const el = this.fragmentText?.nativeElement;
+    if (el) this.highlighter.highlight(el, this.comments);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.popup()) {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.annotation-popup')) {
+        this.closePopup();
+      }
+    }
   }
 }
