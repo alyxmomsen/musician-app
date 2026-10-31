@@ -38,6 +38,8 @@ import { AuthController } from '../presentation/controllers/auth.controller';
 import { createAuthMiddleware } from '../infrastructure/express/middleware/auth.middleware';
 import { RequestHandler } from 'express';
 
+import { ProfilesController } from '../presentation/controllers/profiles.controller';
+
 export interface AppConfig {
     trackedItemsPath: string;
     commentsPath: string;
@@ -55,6 +57,7 @@ export interface AppContainer {
     tagsController: TagsController;
     authController: AuthController;
     authMiddleware: RequestHandler;
+    profilesController: ProfilesController;
 }
 
 export async function bootstrap(config: AppConfig): Promise<AppContainer> {
@@ -73,6 +76,8 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
     const usersRepo = new JsonUsersRepo(config.usersPath);
     const credentialsRepo = new JsonCredentialsRepo(config.credentialsPath);
     const profilesRepo = new JsonUserProfilesRepo(config.profilesPath);
+
+    const profilesController = new ProfilesController(profilesRepo);
 
     // ---------- Use cases: tracked items ----------
 
@@ -191,5 +196,6 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         tagsController,
         authController,
         authMiddleware,
+        profilesController,
     };
 }

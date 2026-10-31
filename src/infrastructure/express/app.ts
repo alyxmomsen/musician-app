@@ -14,11 +14,15 @@ import { createCommentsRouter } from './routes/comments.routes';
 import { createTagsRouter } from './routes/tags.routes';
 import { createAuthRouter } from './routes/auth.routes';
 
+import { ProfilesController } from '../../presentation/controllers/profiles.controller';
+import { createProfilesRouter } from './routes/profiles.routes';
+
 export function createApp(
     listItemController: TrackedItemsListController,
     commentsController: CommentsController,
     tagsController: TagsController,
     authController: AuthController,
+    profilesController: ProfilesController,
     authMiddleware: RequestHandler
 ) {
     const app = express();
@@ -43,6 +47,12 @@ export function createApp(
         createCommentsRouter(commentsController)
     );
     app.use('/api/tags', authMiddleware, createTagsRouter(tagsController));
+
+    app.use(
+        '/api/profiles',
+        authMiddleware,
+        createProfilesRouter(profilesController)
+    );
 
     app.use(
         (err: Error, _req: Request, res: Response, _next: NextFunction) => {
