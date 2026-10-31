@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { CommentsOrchestrator } from '../../application/comments-orchestrator';
 import { TCommentTarget } from '../../domain/comment';
 
+import { IAuthRequest } from '../../infrastructure/express/middleware/auth.middleware';
+
 interface IdParams {
     id: string;
 }
@@ -50,13 +52,20 @@ export class CommentsController {
                 text?: string;
                 target?: TCommentTarget;
             };
+
             if (typeof text !== 'string' || text.trim() === '') {
                 return res.status(400).json({ error: 'text is required' });
             }
             if (!target || typeof target !== 'object' || !target.type) {
                 return res.status(400).json({ error: 'target is required' });
             }
-            const comment = await this.orchestrator.add(text, target);
+
+            const authorId = (req as IAuthRequest).userId;
+            if (!authorId) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+
+            const comment = await this.orchestrator.add(text, target, authorId);
             res.status(201).json(comment.getState());
         } catch (err) {
             next(err);

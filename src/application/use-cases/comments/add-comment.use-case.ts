@@ -8,13 +8,17 @@ export class AddCommentUseCase {
         private idGenerator: IUniqueIdGenerator
     ) {}
 
-    async execute(text: string, target: TCommentTarget): Promise<Comment> {
+    async execute(
+        text: string,
+        target: TCommentTarget,
+        authorId: string
+    ): Promise<Comment> {
         const trimmed = text.trim();
         if (!trimmed) {
             throw new Error('Comment text cannot be empty');
         }
         const id = this.idGenerator.generate();
-        const comment = new Comment(id, trimmed, target, Date.now());
+        const comment = new Comment(id, trimmed, target, authorId, Date.now());
         await this.commentsRepo.create(comment);
         return comment;
     }

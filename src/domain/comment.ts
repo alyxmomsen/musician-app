@@ -1,4 +1,4 @@
-export type TUniqueId = string;
+import { TUniqueId } from './types/unique-id';
 
 export type TCommentTarget =
     | {
@@ -22,6 +22,7 @@ export type TCommentState = {
     id: TUniqueId;
     text: string;
     target: TCommentTarget;
+    authorId: TUniqueId;
     createdAt: number;
 };
 
@@ -30,6 +31,7 @@ export class Comment {
         readonly id: TUniqueId,
         private text: string,
         readonly target: TCommentTarget,
+        readonly authorId: TUniqueId,
         readonly createdAt: number
     ) {
         if (target.type === 'fragment-range' && target.start >= target.end) {
@@ -58,11 +60,18 @@ export class Comment {
             id: this.id,
             text: this.text,
             target: this.target,
+            authorId: this.authorId,
             createdAt: this.createdAt,
         };
     }
 
     static fromState(state: TCommentState): Comment {
-        return new Comment(state.id, state.text, state.target, state.createdAt);
+        return new Comment(
+            state.id,
+            state.text,
+            state.target,
+            state.authorId,
+            state.createdAt
+        );
     }
 }

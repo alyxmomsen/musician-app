@@ -14,8 +14,12 @@ export class CommentsOrchestrator {
         private getByTrackedItemUseCase: GetCommentsByTrackedItemUseCase
     ) {}
 
-    async add(text: string, target: TCommentTarget): Promise<Comment> {
-        return this.addCommentUseCase.execute(text, target);
+    async add(
+        text: string,
+        target: TCommentTarget,
+        authorId: string
+    ): Promise<Comment> {
+        return this.addCommentUseCase.execute(text, target, authorId);
     }
 
     async update(id: string, text: string): Promise<Comment | null> {
