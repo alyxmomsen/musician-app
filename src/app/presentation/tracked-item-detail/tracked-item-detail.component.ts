@@ -33,6 +33,13 @@ import { FragmentCardComponent } from './fragment-card/fragment-card.component';
 
 import { TagChipsComponent } from '../shared/tag-chips/tag-chips.component';
 
+import {
+  UserProfilesRepositoryPort,
+  TUserProfile,
+} from '../../domain/user/ports/user-profiles.repository.port';
+import { USER_PROFILES_REPOSITORY_TOKEN } from '../../core/tokens/user-profiles-repository.token';
+import { Inject } from '@angular/core';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -91,6 +98,8 @@ export class TrackedItemDetailComponent implements OnInit {
 
   @ViewChild('fragmentsContainer') fragmentsContainer?: ElementRef<HTMLElement>;
 
+  profiles = signal<Map<string, TUserProfile>>(new Map());
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -105,7 +114,10 @@ export class TrackedItemDetailComponent implements OnInit {
     private selectionService: SelectionService,
     private addComment: AddCommentUseCase,
     private deleteComment: DeleteCommentUseCase,
-    private getCommentsByTrackedItem: GetCommentsByTrackedItemUseCase
+    private getCommentsByTrackedItem: GetCommentsByTrackedItemUseCase,
+
+    @Inject(USER_PROFILES_REPOSITORY_TOKEN)
+    private readonly profilesRepo: UserProfilesRepositoryPort,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -122,7 +134,12 @@ export class TrackedItemDetailComponent implements OnInit {
     try {
       const item = await this.getById.execute(this.id);
       this.item.set(item);
-      this.comments.set(await this.getCommentsByTrackedItem.execute(this.id));
+
+      const comments = await this.getCommentsByTrackedItem.execute(this.id);
+      this.comments.set(comments);
+
+      const authorIds = Array.from(new Set(comments.map((c) => c.authorId)));
+      this.profiles.set(await this.profilesRepo.getByUserIds(authorIds));
     } catch (err) {
       console.error('Failed to load item:', err);
       this.item.set(null);
@@ -376,5 +393,9 @@ export class TrackedItemDetailComponent implements OnInit {
     } catch (err) {
       console.error('Delete comment failed:', err);
     }
+  }
+
+  getAuthorName(authorId: string): string {
+    return this.profiles().get(authorId)?.displayName ?? 'Неизвестный';
   }
 }

@@ -100,3 +100,20 @@
     gap: 0.5rem;
   }
 }
+
+.comment-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  .comment-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .comment-author {
+    font-size: 0.75rem;
+    color: #888;
+  }
+}

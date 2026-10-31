@@ -21,6 +21,8 @@ import { AUTH_REPOSITORY_TOKEN } from './core/tokens/auth-repository.token';
 import { HttpAuthRepository } from './infrastructure/auth/http-auth.repository';
 import { authInterceptor } from './infrastructure/auth/auth.interceptor';
 
+import { USER_PROFILES_REPOSITORY_TOKEN } from './core/tokens/user-profiles-repository.token';
+import { HttpUserProfilesRepository } from './infrastructure/user/http-user-profiles.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -44,6 +46,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: AUTH_REPOSITORY_TOKEN,
       useClass: HttpAuthRepository,
+    },
+    {
+      provide: USER_PROFILES_REPOSITORY_TOKEN,
+      useClass: HttpUserProfilesRepository,
     },
   ],
 };

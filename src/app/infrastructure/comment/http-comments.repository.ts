@@ -52,6 +52,7 @@ export class HttpCommentsRepository implements CommentsRepositoryPort {
       id: dto.id,
       text: dto.text,
       target: dto.target,
+      authorId: dto.authorId,
       createdAt: dto.createdAt,
     };
   }

@@ -14,5 +14,6 @@ export interface Comment {
   id: string;
   text: string;
   target: TCommentTarget;
+  authorId: string;
   createdAt: number;
 }

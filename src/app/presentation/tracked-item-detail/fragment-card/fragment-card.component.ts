@@ -14,6 +14,8 @@ import { Comment } from '../../../domain/comment/models/comment.entity';
 
 import { TagChipsComponent } from '../../shared/tag-chips/tag-chips.component';
 
+import { TUserProfile } from '../../../domain/user/ports/user-profiles.repository.port';
+
 @Component({
   selector: 'app-fragment-card',
   standalone: true,
@@ -37,6 +39,7 @@ export class FragmentCardComponent {
   @Input({ required: true }) fragment!: TrackedItemTextFragment;
   @Input() comments: Comment[] = [];
   @Input({ required: true }) trackedItemId!: string;
+  @Input() profiles: Map<string, TUserProfile> = new Map();
 
   @Output() toggleDone = new EventEmitter<{ fragmentId: string; done: boolean }>();
   @Output() markReviewed = new EventEmitter<string>();
@@ -112,5 +115,9 @@ export class FragmentCardComponent {
     if (days === 1) return 'Вчера';
     if (days < 7) return `${days} дн. назад`;
     return new Date(timestamp).toLocaleDateString('ru-RU');
+  }
+
+  getAuthorName(authorId: string): string {
+    return this.profiles.get(authorId)?.displayName ?? 'Неизвестный';
   }
 }

@@ -60,11 +60,11 @@
       <div class="fragment-comments">
         @for (comment of comments; track comment.id) {
           <div class="fragment-comment">
-            @if (comment.target.type === 'fragment-range') {
-              <div class="comment-quote">{{ comment.target.quote }}</div>
-            }
             <div class="comment-body">
-              <span class="comment-text">{{ comment.text }}</span>
+              <div class="comment-main">
+                <span class="comment-text">{{ comment.text }}</span>
+                <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
+              </div>
               <p-button
                 icon="pi pi-trash"
                 [text]="true"

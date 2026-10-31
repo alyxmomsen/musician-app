@@ -4,5 +4,6 @@ export interface CommentDto {
   id: string;
   text: string;
   target: TCommentTarget;
+  authorId: string;
   createdAt: number;
 }

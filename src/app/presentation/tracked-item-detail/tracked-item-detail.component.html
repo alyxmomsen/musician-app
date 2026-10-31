@@ -49,7 +49,10 @@
         <summary>{{ commentsForItem().length }} комментариев к треку</summary>
         @for (comment of commentsForItem(); track comment.id) {
           <div class="comment-item">
-            <div class="comment-text">{{ comment.text }}</div>
+            <div class="comment-main">
+              <span class="comment-text">{{ comment.text }}</span>
+              <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
+            </div>
             <p-button
               icon="pi pi-trash"
               [text]="true"
@@ -80,6 +83,7 @@
             (update)="onUpdateFragment($event)"
             (delete)="onRemoveFragment($event)"
             (deleteComment)="deleteCommentById($event)"
+            [profiles]="profiles()"
           />
         </div>
       }
