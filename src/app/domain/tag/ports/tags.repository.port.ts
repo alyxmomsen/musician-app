@@ -4,11 +4,16 @@ import { TTagLinkTarget } from '../models/tag-link.entity';
 export interface TagsRepositoryPort {
   getAll(): Promise<HashTag[]>;
   getForTarget(target: TTagLinkTarget): Promise<HashTag[]>;
-  getTargetsForTag(tagId: string): Promise<TTagLinkTarget[]>;
   getForTrackedItem(
     trackedItemId: string
   ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>>;
-  add(tagText: string, target: TTagLinkTarget): Promise<HashTag>;
+  getTargetsForTag(tagId: string): Promise<TTagLinkTarget[]>;
+  add(
+    tagText: string,
+    target: TTagLinkTarget,
+    description?: string
+  ): Promise<HashTag>;
+  updateDescription(tagId: string, description: string): Promise<HashTag>;
   remove(tagId: string, target: TTagLinkTarget): Promise<void>;
   deleteTag(tagId: string): Promise<void>;
 }

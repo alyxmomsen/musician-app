@@ -11,7 +11,11 @@ export class AddTagUseCase {
     private readonly repo: TagsRepositoryPort
   ) {}
 
-  execute(tagText: string, target: TTagLinkTarget): Promise<HashTag> {
-    return this.repo.add(tagText, target);
+  execute(
+    tagText: string,
+    target: TTagLinkTarget,
+    description: string = ''
+  ): Promise<HashTag> {
+    return this.repo.add(tagText, target, description);
   }
 }

@@ -24,15 +24,46 @@ export class HttpTagsRepository implements TagsRepositoryPort {
     return dtos.map((d) => this.toEntity(d));
   }
 
+  async getForTrackedItem(
+    trackedItemId: string
+  ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>> {
+    const dtos = await firstValueFrom(
+      this.http.get<Array<{ tag: HashTagDto; target: TTagLinkTarget }>>(
+        `${this.apiUrl}/for-tracked-item/${trackedItemId}`
+      )
+    );
+    return dtos.map((d) => ({
+      tag: this.toEntity(d.tag),
+      target: d.target,
+    }));
+  }
+
   async getTargetsForTag(tagId: string): Promise<TTagLinkTarget[]> {
     return firstValueFrom(
       this.http.get<TTagLinkTarget[]>(`${this.apiUrl}/${tagId}/targets`)
     );
   }
 
-  async add(tagText: string, target: TTagLinkTarget): Promise<HashTag> {
+  async add(
+    tagText: string,
+    target: TTagLinkTarget,
+    description: string = ''
+  ): Promise<HashTag> {
     const dto = await firstValueFrom(
-      this.http.post<HashTagDto>(`${this.apiUrl}/link`, { tagText, target })
+      this.http.post<HashTagDto>(`${this.apiUrl}/link`, {
+        tagText,
+        target,
+        description,
+      })
+    );
+    return this.toEntity(dto);
+  }
+
+  async updateDescription(tagId: string, description: string): Promise<HashTag> {
+    const dto = await firstValueFrom(
+      this.http.patch<HashTagDto>(`${this.apiUrl}/${tagId}/description`, {
+        description,
+      })
     );
     return this.toEntity(dto);
   }
@@ -52,20 +83,8 @@ export class HttpTagsRepository implements TagsRepositoryPort {
       id: dto.id,
       originalText: dto.originalText,
       normalizedText: dto.normalizedText,
+      description: dto.description ?? '',
+      createdBy: dto.createdBy ?? '',
     };
   }
-
-  async getForTrackedItem(
-        trackedItemId: string
-    ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>> {
-    const dtos = await firstValueFrom(
-        this.http.get<
-        Array<{ tag: HashTagDto; target: TTagLinkTarget }>
-        >(`${this.apiUrl}/for-tracked-item/${trackedItemId}`)
-    );
-    return dtos.map((d) => ({
-        tag: this.toEntity(d.tag),
-        target: d.target,
-    }));
-    }   
 }

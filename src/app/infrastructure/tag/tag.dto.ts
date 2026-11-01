@@ -4,6 +4,8 @@ export interface HashTagDto {
   id: string;
   originalText: string;
   normalizedText: string;
+  description: string;
+  createdBy: string;
 }
 
-export type TagLinkTargetDto = TTagLinkTarget; 
+export type TagLinkTargetDto = TTagLinkTarget;

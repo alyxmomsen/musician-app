@@ -1,6 +1,11 @@
 <div class="tag-chips">
   @for (tag of tags(); track tag.id) {
-    <span class="tag-chip">
+    <span
+      class="tag-chip"
+      [pTooltip]="tag.description || ''"
+      [tooltipDisabled]="!tag.description"
+      tooltipPosition="top"
+    >
       <span class="tag-text">{{ tag.originalText }}</span>
       <button
         type="button"
@@ -9,39 +14,90 @@
       >
         <i class="pi pi-times"></i>
       </button>
+      @if (canEditDescription(tag)) {
+        <button
+          type="button"
+          class="tag-edit"
+          (click)="startEditDescription(tag)"
+          pTooltip="Описание"
+        >
+          <i class="pi pi-pencil"></i>
+        </button>
+      }
     </span>
   }
 
   @if (!adding()) {
     <button type="button" class="tag-add" (click)="startAdd()">
       <i class="pi pi-plus"></i>
-      <span>add tag</span>
+      <span>Тег</span>
     </button>
   } @else {
-    <input
-      pInputText
-      type="text"
-      [ngModel]="newTagText()"
-      (ngModelChange)="newTagText.set($event)"
-      (keydown)="onKeydown($event)"
-      placeholder="tag (whitespace — separator)"
-      class="tag-input"
-      autofocus
-    />
-    <p-button
-      icon="pi pi-check"
-      size="small"
-      [text]="true"
-      [loading]="saving()"
-      [disabled]="!newTagText().trim()"
-      (onClick)="submitAdd()"
-    />
-    <p-button
-      icon="pi pi-times"
-      size="small"
-      severity="secondary"
-      [text]="true"
-      (onClick)="cancelAdd()"
-    />
+    <div class="tag-add-form">
+      <input
+        pInputText
+        type="text"
+        [ngModel]="newTagText()"
+        (ngModelChange)="newTagText.set($event)"
+        (keydown)="onKeydown($event)"
+        placeholder="тег (пробел — разделитель)"
+        class="tag-input"
+        autofocus
+      />
+      <input
+        pInputText
+        type="text"
+        [ngModel]="newDescription()"
+        (ngModelChange)="newDescription.set($event)"
+        placeholder="что значит (опционально)"
+        class="tag-description-input"
+      />
+      <div class="tag-add-actions">
+        <p-button
+          icon="pi pi-check"
+          size="small"
+          [text]="true"
+          [loading]="saving()"
+          [disabled]="!newTagText().trim()"
+          (onClick)="submitAdd()"
+        />
+        <p-button
+          icon="pi pi-times"
+          size="small"
+          severity="secondary"
+          [text]="true"
+          (onClick)="cancelAdd()"
+        />
+      </div>
+    </div>
+  }
+
+  @if (editingDescriptionFor(); as tagId) {
+    <div class="tag-description-edit-overlay" (click)="cancelEditDescription()">
+      <div class="tag-description-edit" (click)="$event.stopPropagation()">
+        <textarea
+          pTextarea
+          rows="3"
+          [ngModel]="editDescription()"
+          (ngModelChange)="editDescription.set($event)"
+          placeholder="Что значит этот тег?"
+        ></textarea>
+        <div class="tag-description-edit-actions">
+          <p-button
+            label="Сохранить"
+            icon="pi pi-check"
+            [loading]="savingDescription()"
+            (onClick)="submitEditDescription(tagId)"
+          />
+          <p-button
+            label="Отмена"
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            (onClick)="cancelEditDescription()"
+          />
+        </div>
+      </div>
+    </div>
   }
 </div>
