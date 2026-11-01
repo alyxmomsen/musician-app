@@ -6,5 +6,6 @@ export interface ITagsRepo {
     getById(id: TUniqueId): Promise<HashTag | null>;
     getByNormalizedText(normalizedText: string): Promise<HashTag | null>;
     getAll(): Promise<HashTag[]>;
+    update(tag: HashTag): Promise<void>;
     delete(id: TUniqueId): Promise<void>;
 }

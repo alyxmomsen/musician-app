@@ -8,6 +8,7 @@ import { GetTargetsForTagUseCase } from './use-cases/tags/get-targets-for-tag.us
 import { GetAllTagsUseCase } from './use-cases/tags/get-all-tags.use-case';
 import { GetTagLinksByTrackedItemUseCase } from './use-cases/tags/get-tag-links-by-tracked-item.use-case';
 import { GetTagByIdUseCase } from './use-cases/tags/get-tag-by-id.use-case';
+import { UpdateTagDescriptionUseCase } from './use-cases/tags/update-tag-description.use-case';
 
 export class TagsOrchestrator {
     constructor(
@@ -19,14 +20,23 @@ export class TagsOrchestrator {
         private getAllTagsUseCase: GetAllTagsUseCase,
 
         private getTagLinksByTrackedItem: GetTagLinksByTrackedItemUseCase,
-        private getTagById: GetTagByIdUseCase
+        private getTagById: GetTagByIdUseCase,
+
+        private updateTagDescriptionUseCase: UpdateTagDescriptionUseCase,
     ) {}
 
     async add(
         tagText: string,
-        target: TTagLinkTarget
+        target: TTagLinkTarget,
+        authorId: string,
+        description: string = ''
     ): Promise<{ tag: HashTag }> {
-        const { tag } = await this.addTagUseCase.execute(tagText, target);
+        const { tag } = await this.addTagUseCase.execute(
+            tagText,
+            target,
+            authorId,
+            description
+        );
         return { tag };
     }
 
@@ -61,5 +71,13 @@ export class TagsOrchestrator {
             if (tag) result.push({ tag, target: link.target });
         }
         return result;
+    }
+
+    async updateDescription(
+        tagId: string,
+        description: string,
+        userId: string
+    ): Promise<HashTag> {
+        return this.updateTagDescriptionUseCase.execute(tagId, description, userId);
     }
 }

@@ -13,16 +13,16 @@ export class AddTagToTargetUseCase {
 
     async execute(
         tagText: string,
-        target: TTagLinkTarget
+        target: TTagLinkTarget,
+        authorId: string,
+        description: string = ''
     ): Promise<{ tag: HashTag; link: TagLink }> {
         const trimmed = tagText.trim();
         if (!trimmed) {
             throw new Error('Tag text cannot be empty');
         }
         if (/\s/.test(trimmed)) {
-            throw new Error(
-                'Tag text must not contain whitespace; split tags on client'
-            );
+            throw new Error('Tag text must not contain whitespace; split tags on client');
         }
 
         const normalized = trimmed.toLowerCase();
@@ -30,12 +30,18 @@ export class AddTagToTargetUseCase {
         let tag = await this.tagsRepo.getByNormalizedText(normalized);
         if (!tag) {
             const tagId = this.idGenerator.generate();
-            tag = new HashTag(tagId, trimmed, normalized);
+            tag = new HashTag(
+                tagId,
+                trimmed,
+                normalized,
+                description.trim(),
+                authorId
+            );
             await this.tagsRepo.create(tag);
         }
 
         const existingLinks = await this.tagLinksRepo.getByTarget(target);
-        const existing = existingLinks.find((l) => l.tagId === tag.id);
+        const existing = existingLinks.find((l) => l.tagId === tag!.id);
         if (existing) {
             return { tag, link: existing };
         }

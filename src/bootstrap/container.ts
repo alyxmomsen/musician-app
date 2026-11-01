@@ -40,6 +40,8 @@ import { RequestHandler } from 'express';
 
 import { ProfilesController } from '../presentation/controllers/profiles.controller';
 
+import { UpdateTagDescriptionUseCase } from '../application/use-cases/tags/update-tag-description.use-case';
+
 export interface AppConfig {
     trackedItemsPath: string;
     commentsPath: string;
@@ -112,7 +114,8 @@ export async function bootstrap(config: AppConfig): Promise<AppContainer> {
         new GetTargetsForTagUseCase(tagLinksRepo),
         new GetAllTagsUseCase(tagsRepo),
         new GetTagLinksByTrackedItemUseCase(tagLinksRepo),
-        new GetTagByIdUseCase(tagsRepo)
+        new GetTagByIdUseCase(tagsRepo),
+        new UpdateTagDescriptionUseCase(tagsRepo)
     );
     const tagsController = new TagsController(tagsOrchestrator);
 

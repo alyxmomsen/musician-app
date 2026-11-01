@@ -61,4 +61,12 @@ export class JsonTagsRepo implements ITagsRepo {
         this.items.delete(id);
         await this.persist();
     }
+
+    async update(tag: HashTag): Promise<void> {
+        if (!this.items.has(tag.id)) {
+            throw new Error(`Tag ${tag.id} not found`);
+        }
+        this.items.set(tag.id, tag.getState());
+        await this.persist();
+    }
 }

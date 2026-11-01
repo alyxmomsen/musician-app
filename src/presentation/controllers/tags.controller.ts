@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { TagsOrchestrator } from '../../application/tags-orchestrator';
 import { TTagLinkTarget } from '../../domain/tag-link';
 
+import { IAuthRequest } from '../../infrastructure/express/middleware/auth.middleware';
+
 interface IdParams {
     id: string;
 }
@@ -50,9 +52,10 @@ export class TagsController {
 
     add = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { tagText, target } = req.body as {
+            const { tagText, target, description } = req.body as {
                 tagText?: string;
                 target?: TTagLinkTarget;
+                description?: string;
             };
             if (typeof tagText !== 'string' || tagText.trim() === '') {
                 return res.status(400).json({ error: 'tagText is required' });
@@ -65,7 +68,16 @@ export class TagsController {
             if (!target || typeof target !== 'object' || !target.type) {
                 return res.status(400).json({ error: 'target is required' });
             }
-            const { tag } = await this.orchestrator.add(tagText, target);
+            const authorId = (req as IAuthRequest).userId;
+            if (!authorId) return res.status(401).json({ error: 'Unauthorized' });
+
+            const desc = typeof description === 'string' ? description : '';
+            const { tag } = await this.orchestrator.add(
+                tagText,
+                target,
+                authorId,
+                desc
+            );
             res.status(201).json(tag.getState());
         } catch (err) {
             next(err);
@@ -120,6 +132,42 @@ export class TagsController {
                 }))
             );
         } catch (err) {
+            next(err);
+        }
+    };
+
+    updateDescription = async (
+        req: Request<IdParams>,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { description } = req.body as { description?: string };
+
+            if (typeof description !== 'string') {
+                return res.status(400).json({ error: 'description is required' });
+            }
+
+            const userId = (req as unknown as IAuthRequest).userId;
+
+            if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+            const tag = await this.orchestrator.updateDescription(
+                req.params.id,
+                description,
+                userId
+            );
+            res.json(tag.getState());
+        } catch (err) {
+            if (err instanceof Error) {
+                if (err.message === 'Tag not found') {
+                    return res.status(404).json({ error: err.message });
+                }
+                if (err.message.includes('Only the tag author')) {
+                    return res.status(403).json({ error: err.message });
+                }
+                return res.status(400).json({ error: err.message });
+            }
             next(err);
         }
     };
