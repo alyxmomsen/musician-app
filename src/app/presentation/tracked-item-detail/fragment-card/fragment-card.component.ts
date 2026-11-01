@@ -159,7 +159,6 @@ export class FragmentCardComponent
     event.stopPropagation();
 
     if (!this.isExpanded()) {
-      // разворачиваем и ждём, пока Angular отрисует DOM
       this.isExpanded.set(true);
       setTimeout(() => {
         this.applyHighlight();
@@ -168,10 +167,10 @@ export class FragmentCardComponent
         }, 0);
       }, 0);
       return;
-  }
+    }
 
-  this.highlighter.scrollToAnnotation(commentId);
-}
+    this.highlighter.scrollToAnnotation(commentId);
+  }
 
   onCommentHover(commentId: string): void {
     this.highlighter.setHovered(commentId);
@@ -182,6 +181,19 @@ export class FragmentCardComponent
   }
 
   onCardMouseMove(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+
+    // не трогаем hover, если мышь не над текстом
+    if (
+      target.closest('.fragment-comment') ||
+      target.closest('.fragment-footer') ||
+      target.closest('.fragment-header') ||
+      target.closest('.annotation-popup') ||
+      target.closest('.edit-form')
+    ) {
+      return;
+    }
+
     const hovered = this.highlighter.hitTest(event.clientX, event.clientY);
     this.highlighter.setHovered(hovered);
   }
@@ -191,7 +203,6 @@ export class FragmentCardComponent
   }
 
   onTextClick(event: MouseEvent): void {
-    // если это выделение, а не клик — не переключаем
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) {
       return;
@@ -199,6 +210,10 @@ export class FragmentCardComponent
 
     const ids = this.highlighter.getCommentIdsAt(event.clientX, event.clientY);
     if (ids.length === 0) {
+      if (this.popup()) {
+        this.closePopup();
+        return;
+      }
       this.toggleExpand();
       return;
     }
@@ -246,11 +261,15 @@ export class FragmentCardComponent
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (this.popup()) {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.annotation-popup')) {
-        this.closePopup();
-      }
-    }
+    if (!this.popup()) return;
+    const target = event.target as HTMLElement;
+
+    // клик внутри popup — не закрываем
+    if (target.closest('.annotation-popup')) return;
+
+    // клик по тексту — popup закрывается/переоткрывается в onTextClick
+    if (target.closest('.fragment-text')) return;
+
+    this.closePopup();
   }
 }
