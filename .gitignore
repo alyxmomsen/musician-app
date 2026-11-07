@@ -9,3 +9,5 @@ src/users.json
 src/credentials.json
 src/profiles.json
 .env
+data/
+temp/
