@@ -8,6 +8,12 @@
     />
     <div class="actions">
       <p-button
+        label="Комментарий"
+        icon="pi pi-comment"
+        [text]="true"
+        (onClick)="startAddItemComment()"
+      />
+      <p-button
         label="Редактировать"
         icon="pi pi-pencil"
         [text]="true"
@@ -58,6 +64,7 @@
               [text]="true"
               severity="danger"
               size="small"
+              styleClass="comment-delete-btn"
               (onClick)="deleteCommentById(comment.id)"
             />
           </div>
@@ -198,4 +205,47 @@
       </div>
     </div>
   }
+
+  @if (showItemCommentDialog()) {
+    <div class="comment-dialog-overlay" (click)="cancelAddItemComment()">
+      <div class="comment-dialog" (click)="$event.stopPropagation()">
+        <div class="comment-dialog-title">Комментарий к треку</div>
+
+        <textarea
+          pTextarea
+          rows="3"
+          [ngModel]="newItemCommentText()"
+          (ngModelChange)="newItemCommentText.set($event)"
+          placeholder="Комментарий (опционально)"
+        ></textarea>
+
+        <input
+          pInputText
+          type="text"
+          [ngModel]="newItemCommentTags()"
+          (ngModelChange)="newItemCommentTags.set($event)"
+          placeholder="Теги через пробел (опционально)"
+          class="annotation-tags-input"
+        />
+
+        <div class="comment-dialog-actions">
+          <p-button
+            label="Сохранить"
+            icon="pi pi-check"
+            [loading]="savingItemComment()"
+            [disabled]="!newItemCommentText().trim() && !newItemCommentTags().trim()"
+            (onClick)="submitAddItemComment()"
+          />
+          <p-button
+            label="Отмена"
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            (onClick)="cancelAddItemComment()"
+          />
+        </div>
+      </div>
+    </div>
+  }         
+
 </div>

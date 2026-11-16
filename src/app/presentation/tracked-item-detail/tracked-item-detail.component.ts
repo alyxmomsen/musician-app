@@ -106,6 +106,11 @@ export class TrackedItemDetailComponent implements OnInit {
 
   newAnnotationTags = signal('');
 
+  showItemCommentDialog = signal(false);
+  newItemCommentText = signal('');
+  newItemCommentTags = signal('');
+  savingItemComment = signal(false);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -463,4 +468,56 @@ export class TrackedItemDetailComponent implements OnInit {
       console.error('Add fragment comment failed:', err);
     }
   }
+
+  startAddItemComment(): void {
+    this.newItemCommentText.set('');
+    this.newItemCommentTags.set('');
+    this.showItemCommentDialog.set(true);
+  }
+
+  cancelAddItemComment(): void {
+    this.showItemCommentDialog.set(false);
+    this.newItemCommentText.set('');
+    this.newItemCommentTags.set('');
+  }
+
+  async submitAddItemComment(): Promise<void> {
+    const comment = this.newItemCommentText().trim();
+    const tagsInput = this.newItemCommentTags().trim();
+    const tags = tagsInput.length > 0
+      ? tagsInput.split(/\s+/).filter((t) => t.length > 0)
+      : [];
+
+    if (!comment && tags.length === 0) return;
+
+    this.savingItemComment.set(true);
+    try {
+      const result = await this.addAnnotation.execute(
+        comment || null,
+        tags,
+        {
+          type: 'tracked-item',
+          trackedItemId: this.id,
+        }
+      );
+
+      if (result.comment) {
+        this.comments.update((list) => [...list, result.comment!]);
+      }
+
+      const me = this.auth.user();
+      if (me) {
+        const next = new Map(this.profiles());
+        next.set(me.id, { userId: me.id, displayName: me.displayName });
+        this.profiles.set(next);
+      }
+
+      this.cancelAddItemComment();
+    } catch (err) {
+      console.error('Add item comment failed:', err);
+    } finally {
+      this.savingItemComment.set(false);
+    }
+  }
+
 }
