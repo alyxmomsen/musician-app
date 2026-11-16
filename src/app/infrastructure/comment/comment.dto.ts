@@ -1,4 +1,5 @@
 import { TCommentTarget } from '../../domain/comment/models/comment.entity';
+import { HashTagDto } from '../tag/tag.dto';
 
 export interface CommentDto {
   id: string;
@@ -6,4 +7,9 @@ export interface CommentDto {
   target: TCommentTarget;
   authorId: string;
   createdAt: number;
+}
+
+export interface AnnotationResponseDto {
+  comment: CommentDto | null;
+  tags: HashTagDto[];
 }

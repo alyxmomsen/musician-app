@@ -7,6 +7,11 @@ import {
 import { Comment, TCommentTarget } from '../../domain/comment/models/comment.entity';
 import { CommentDto } from './comment.dto';
 
+import { HashTag } from '../../domain/tag/models/hash-tag.entity';
+import { IAnnotationResult } from '../../domain/comment/models/comment.entity';
+import { AnnotationResponseDto } from './comment.dto';
+import { HashTagDto } from '../tag/tag.dto';
+
 @Injectable()
 export class HttpCommentsRepository implements CommentsRepositoryPort {
   private readonly apiUrl = '/api/comments';
@@ -54,6 +59,30 @@ export class HttpCommentsRepository implements CommentsRepositoryPort {
       target: dto.target,
       authorId: dto.authorId,
       createdAt: dto.createdAt,
+    };
+  }
+
+  async addAnnotation(
+    comment: string | null,
+    tags: string[],
+    target: TCommentTarget
+  ): Promise<IAnnotationResult> {
+    const dto = await firstValueFrom(
+      this.http.post<AnnotationResponseDto>(`/api/annotations`, {
+        comment,
+        tags,
+        target,
+      })
+    );
+    return {
+      comment: dto.comment ? this.toEntity(dto.comment) : null,
+      tags: dto.tags.map((t) => ({
+        id: t.id,
+        originalText: t.originalText,
+        normalizedText: t.normalizedText,
+        description: t.description ?? '',
+        createdBy: t.createdBy ?? '',
+      })),
     };
   }
 }

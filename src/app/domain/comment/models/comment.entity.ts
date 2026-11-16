@@ -1,3 +1,5 @@
+import { HashTag } from '../../tag/models/hash-tag.entity';
+
 export type TCommentTarget =
   | {
       type: 'fragment-range';
@@ -7,7 +9,7 @@ export type TCommentTarget =
       end: number;
       quote: string;
     }
-  | { type: 'tag'; tagId: string }
+  | { type: 'fragment'; trackedItemId: string; fragmentId: string }
   | { type: 'tracked-item'; trackedItemId: string };
 
 export interface Comment {
@@ -16,4 +18,9 @@ export interface Comment {
   target: TCommentTarget;
   authorId: string;
   createdAt: number;
+}
+
+export interface IAnnotationResult {
+  comment: Comment | null;
+  tags: HashTag[];
 }

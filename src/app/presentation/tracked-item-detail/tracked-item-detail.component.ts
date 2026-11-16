@@ -42,6 +42,8 @@ import {
 import { USER_PROFILES_REPOSITORY_TOKEN } from '../../core/tokens/user-profiles-repository.token';
 import { Inject } from '@angular/core';
 
+import { AddAnnotationUseCase } from '../../application/comment/use-cases/add-annotation.use-case';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -68,7 +70,7 @@ import { Inject } from '@angular/core';
     DeleteTrackedItemUseCase,
     MarkFragmentReviewedUseCase,
     UpdateFragmentUseCase,
-    AddCommentUseCase,
+    AddAnnotationUseCase,
     DeleteCommentUseCase,
     GetCommentsByTrackedItemUseCase,
   ],
@@ -102,6 +104,8 @@ export class TrackedItemDetailComponent implements OnInit {
 
   profiles = signal<Map<string, TUserProfile>>(new Map());
 
+  newAnnotationTags = signal('');
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -114,7 +118,7 @@ export class TrackedItemDetailComponent implements OnInit {
     private updateFragment: UpdateFragmentUseCase,
     private confirmService: ConfirmationService,
     private selectionService: SelectionService,
-    private addComment: AddCommentUseCase,
+    private addAnnotation: AddAnnotationUseCase,
     private deleteComment: DeleteCommentUseCase,
     private getCommentsByTrackedItem: GetCommentsByTrackedItemUseCase,
     private auth: AuthService,
@@ -354,34 +358,50 @@ export class TrackedItemDetailComponent implements OnInit {
     const pending = this.pendingSelection();
     if (!pending) return;
     this.newCommentText.set('');
+    this.newAnnotationTags.set('');
     this.showCommentDialog.set(true);
   }
 
   cancelCommentDialog(): void {
     this.showCommentDialog.set(false);
     this.newCommentText.set('');
+    this.newAnnotationTags.set('');
     this.pendingSelection.set(null);
     this.selectionService.clear();
   }
 
-  async submitComment(): Promise<void> {
-    const text = this.newCommentText().trim();
+  async submitAnnotation(): Promise<void> {
+    const comment = this.newCommentText().trim();
+    const tagsInput = this.newAnnotationTags().trim();
+    const tags = tagsInput.length > 0
+      ? tagsInput.split(/\s+/).filter((t) => t.length > 0)
+      : [];
+
+    if (!comment && tags.length === 0) return;
+
     const pending = this.pendingSelection();
-    if (!text || !pending) return;
+    if (!pending) return;
 
     this.savingComment.set(true);
     try {
-      const comment = await this.addComment.execute(text, {
-        type: 'fragment-range',
-        trackedItemId: this.id,
-        fragmentId: pending.fragmentId,
-        start: pending.start,
-        end: pending.end,
-        quote: pending.quote,
-      });
-      this.comments.update((list) => [...list, comment]);
+      const result = await this.addAnnotation.execute(
+        comment || null,
+        tags,
+        {
+          type: 'fragment-range',
+          trackedItemId: this.id,
+          fragmentId: pending.fragmentId,
+          start: pending.start,
+          end: pending.end,
+          quote: pending.quote,
+        }
+      );
 
-      // текущий пользователь уже известен — без HTTP
+      if (result.comment) {
+        this.comments.update((list) => [...list, result.comment!]);
+      }
+
+      // текущий пользователь — в profiles (без HTTP)
       const me = this.auth.user();
       if (me) {
         const next = new Map(this.profiles());
@@ -391,7 +411,7 @@ export class TrackedItemDetailComponent implements OnInit {
 
       this.cancelCommentDialog();
     } catch (err) {
-      console.error('Add comment failed:', err);
+      console.error('Add annotation failed:', err);
     } finally {
       this.savingComment.set(false);
     }

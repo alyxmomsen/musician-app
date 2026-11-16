@@ -1,5 +1,5 @@
 {
-  "name": "musician-app",
+  "name": "musician-app-frontend",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",

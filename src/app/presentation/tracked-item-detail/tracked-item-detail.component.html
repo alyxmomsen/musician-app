@@ -145,7 +145,7 @@
   <!-- Floating-кнопка: вне @if (item), на верхнем уровне -->
   @if (pendingSelection() && !showCommentDialog()) {
     <p-button
-      label="+ Комментарий"
+      label="+ Аннотация"
       icon="pi pi-comment"
       size="small"
       [style]="floatingButtonStyle"
@@ -160,20 +160,31 @@
         @if (pendingSelection(); as p) {
           <div class="comment-dialog-quote">{{ p.quote }}</div>
         }
+
         <textarea
           pTextarea
-          rows="4"
+          rows="3"
           [ngModel]="newCommentText()"
           (ngModelChange)="newCommentText.set($event)"
-          placeholder="Комментарий..."
+          placeholder="Комментарий (опционально)"
         ></textarea>
+
+        <input
+          pInputText
+          type="text"
+          [ngModel]="newAnnotationTags()"
+          (ngModelChange)="newAnnotationTags.set($event)"
+          placeholder="Теги через пробел (опционально), например: linkinpark/chesterpart english/words/tobe"
+          class="annotation-tags-input"
+        />
+
         <div class="comment-dialog-actions">
           <p-button
             label="Сохранить"
             icon="pi pi-check"
             [loading]="savingComment()"
-            [disabled]="!newCommentText().trim()"
-            (onClick)="submitComment()"
+            [disabled]="!newCommentText().trim() && !newAnnotationTags().trim()"
+            (onClick)="submitAnnotation()"
           />
           <p-button
             label="Отмена"
