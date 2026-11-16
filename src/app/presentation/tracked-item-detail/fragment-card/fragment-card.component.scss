@@ -242,3 +242,45 @@
 .fragment-comment:hover ::ng-deep .comment-delete-btn {
   opacity: 1;
 }
+
+.comment-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.comment-dialog {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.25rem;
+  width: 480px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .comment-dialog-title {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  textarea {
+    width: 100%;
+  }
+
+  .annotation-tags-input {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .comment-dialog-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+}

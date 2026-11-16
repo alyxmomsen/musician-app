@@ -62,6 +62,11 @@ export class FragmentCardComponent
   }>();
   @Output() delete = new EventEmitter<string>();
   @Output() deleteComment = new EventEmitter<string>();
+  @Output() addFragmentComment = new EventEmitter<{
+    fragmentId: string;
+    comment: string;
+    tags: string[];
+  }>();
 
   isExpanded = signal(false);
   isEditing = signal(false);
@@ -77,9 +82,27 @@ export class FragmentCardComponent
   private lastCommentsKey = '';
 
   menuItems: MenuItem[] = [
-    { label: 'Редактировать', icon: 'pi pi-pencil', command: () => this.startEdit() },
-    { label: 'Удалить', icon: 'pi pi-trash', command: () => this.delete.emit(this.fragment.id) },
+    {
+      label: 'Комментарий к фрагменту',
+      icon: 'pi pi-comment',
+      command: () => this.startAddComment(),
+    },
+    {
+      label: 'Редактировать',
+      icon: 'pi pi-pencil',
+      command: () => this.startEdit(),
+    },
+    {
+      label: 'Удалить',
+      icon: 'pi pi-trash',
+      command: () => this.delete.emit(this.fragment.id),
+    },
   ];
+
+  showCommentDialog = signal(false);
+  newCommentText = signal('');
+  newAnnotationTags = signal('');
+  savingComment = signal(false);
 
   constructor(private highlighter: AnnotationHighlighterService) {}
 
@@ -113,6 +136,35 @@ export class FragmentCardComponent
     this.isExpanded.update((v) => !v);
     // после смены DOM (clamped → expanded) viewchild обновится, ranges надо пересоздать
     setTimeout(() => this.applyHighlight(), 0);
+  }
+
+  startAddComment(): void {
+    this.newCommentText.set('');
+    this.newAnnotationTags.set('');
+    this.showCommentDialog.set(true);
+  }
+
+  cancelAddComment(): void {
+    this.showCommentDialog.set(false);
+    this.newCommentText.set('');
+    this.newAnnotationTags.set('');
+  }
+
+  submitAddComment(): void {
+    const comment = this.newCommentText().trim();
+    const tagsInput = this.newAnnotationTags().trim();
+    const tags = tagsInput.length > 0
+      ? tagsInput.split(/\s+/).filter((t) => t.length > 0)
+      : [];
+
+    if (!comment && tags.length === 0) return;
+
+    this.addFragmentComment.emit({
+      fragmentId: this.fragment.id,
+      comment,
+      tags,
+    });
+    this.cancelAddComment();
   }
 
   startEdit(): void {
@@ -157,6 +209,8 @@ export class FragmentCardComponent
 
   onCommentClick(commentId: string, event: MouseEvent): void {
     event.stopPropagation();
+    const c = this.comments.find((x) => x.id === commentId);
+    if (!c || c.target.type !== 'fragment-range') return;
 
     if (!this.isExpanded()) {
       this.isExpanded.set(true);

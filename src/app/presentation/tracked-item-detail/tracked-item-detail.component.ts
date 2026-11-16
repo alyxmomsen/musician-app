@@ -289,7 +289,9 @@ export class TrackedItemDetailComponent implements OnInit {
   commentsForFragment(fragmentId: string): Comment[] {
     return this.comments().filter(
       (c) =>
-        c.target.type === 'fragment-range' && c.target.fragmentId === fragmentId
+        (c.target.type === 'fragment-range' &&
+          c.target.fragmentId === fragmentId) ||
+        (c.target.type === 'fragment' && c.target.fragmentId === fragmentId)
     );
   }
 
@@ -429,5 +431,36 @@ export class TrackedItemDetailComponent implements OnInit {
 
   getAuthorName(authorId: string): string {
     return this.profiles().get(authorId)?.displayName ?? 'Неизвестный';
+  }
+
+  async onAddFragmentComment(event: {
+    fragmentId: string;
+    comment: string;
+    tags: string[];
+  }): Promise<void> {
+    try {
+      const result = await this.addAnnotation.execute(
+        event.comment || null,
+        event.tags,
+        {
+          type: 'fragment',
+          trackedItemId: this.id,
+          fragmentId: event.fragmentId,
+        }
+      );
+
+      if (result.comment) {
+        this.comments.update((list) => [...list, result.comment!]);
+      }
+
+      const me = this.auth.user();
+      if (me) {
+        const next = new Map(this.profiles());
+        next.set(me.id, { userId: me.id, displayName: me.displayName });
+        this.profiles.set(next);
+      }
+    } catch (err) {
+      console.error('Add fragment comment failed:', err);
+    }
   }
 }

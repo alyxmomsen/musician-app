@@ -148,4 +148,45 @@
       </div>
     </div>
   }
+  @if (showCommentDialog()) {
+    <div class="comment-dialog-overlay" (click)="cancelAddComment()">
+      <div class="comment-dialog" (click)="$event.stopPropagation()">
+        <div class="comment-dialog-title">Комментарий к фрагменту</div>
+
+        <textarea
+          pTextarea
+          rows="3"
+          [ngModel]="newCommentText()"
+          (ngModelChange)="newCommentText.set($event)"
+          placeholder="Комментарий (опционально)"
+        ></textarea>
+
+        <input
+          pInputText
+          type="text"
+          [ngModel]="newAnnotationTags()"
+          (ngModelChange)="newAnnotationTags.set($event)"
+          placeholder="Теги через пробел (опционально)"
+          class="annotation-tags-input"
+        />
+
+        <div class="comment-dialog-actions">
+          <p-button
+            label="Сохранить"
+            icon="pi pi-check"
+            [loading]="savingComment()"
+            [disabled]="!newCommentText().trim() && !newAnnotationTags().trim()"
+            (onClick)="submitAddComment()"
+          />
+          <p-button
+            label="Отмена"
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            (onClick)="cancelAddComment()"
+          />
+        </div>
+      </div>
+    </div>
+  }
 </div>

@@ -78,12 +78,13 @@
             [fragment]="fragment"
             [trackedItemId]="id"
             [comments]="commentsForFragment(fragment.id)"
+            [profiles]="profiles()"
             (toggleDone)="onToggleDone($event)"
             (markReviewed)="onMarkReviewed($event)"
             (update)="onUpdateFragment($event)"
             (delete)="onRemoveFragment($event)"
             (deleteComment)="deleteCommentById($event)"
-            [profiles]="profiles()"
+            (addFragmentComment)="onAddFragmentComment($event)"
           />
         </div>
       }
