@@ -177,6 +177,10 @@
   width: 100%;
 }
 
+[data-fragment-id] {
+  scroll-margin-top: 1rem;
+}
+
 @media (max-width: 1024px) {
   .three-column-layout {
     grid-template-columns: 1fr;

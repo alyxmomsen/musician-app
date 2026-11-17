@@ -2,8 +2,10 @@ import {
   Component,
   OnInit,
   signal,
+  computed,       // ← должно быть
   ViewChild,
   ElementRef,
+  Inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -40,12 +42,16 @@ import {
   TUserProfile,
 } from '../../domain/user/ports/user-profiles.repository.port';
 import { USER_PROFILES_REPOSITORY_TOKEN } from '../../core/tokens/user-profiles-repository.token';
-import { Inject } from '@angular/core';
 
 import { AddAnnotationUseCase } from '../../application/comment/use-cases/add-annotation.use-case';
 
 import { FragmentTocComponent } from './fragment-toc/fragment-toc.component';
 import { ContextPanelComponent } from './context-panel/context-panel.component';
+
+import { GetTagsForTrackedItemUseCase } from '../../application/tag/use-cases/get-tags-for-tracked-item.use-case';
+import { HashTag } from '../../domain/tag/models/hash-tag.entity';
+import { TTagLinkTarget } from '../../domain/tag/models/tag-link.entity';
+import { TFragmentTocItem } from './fragment-toc/fragment-toc.types';
 
 @Component({
   selector: 'app-tracked-item-detail',
@@ -79,6 +85,7 @@ import { ContextPanelComponent } from './context-panel/context-panel.component';
     AddAnnotationUseCase,
     DeleteCommentUseCase,
     GetCommentsByTrackedItemUseCase,
+    GetTagsForTrackedItemUseCase,
   ],
 })
 export class TrackedItemDetailComponent implements OnInit {
@@ -119,6 +126,42 @@ export class TrackedItemDetailComponent implements OnInit {
 
   contextPanelOpen = signal(false);
 
+  allTags = signal<Array<{ tag: HashTag; target: TTagLinkTarget }>>([]);
+
+  tocItems = computed<TFragmentTocItem[]>(() => {
+    const it = this.item();
+    if (!it) return [];
+
+    const comments = this.comments();
+    const tags = this.allTags();
+
+    return it.fragments.map((f) => {
+      const label = f.title && f.title.trim().length > 0
+        ? f.title.trim()
+        : f.text.trim().slice(0, 40) + (f.text.trim().length > 40 ? '…' : '');
+
+      const commentCount = comments.filter(
+        (c) =>
+          (c.target.type === 'fragment-range' && c.target.fragmentId === f.id) ||
+          (c.target.type === 'fragment' && c.target.fragmentId === f.id)
+      ).length;
+
+      const tagCount = tags.filter(
+        (t) =>
+          (t.target.type === 'fragment' && t.target.fragmentId === f.id) ||
+          (t.target.type === 'fragment-range' && t.target.fragmentId === f.id)
+      ).length;
+
+      return {
+        id: f.id,
+        label: label || 'Без названия',
+        isDone: f.isDone,
+        commentCount,
+        tagCount,
+      };
+    });
+  });
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -138,6 +181,7 @@ export class TrackedItemDetailComponent implements OnInit {
 
     @Inject(USER_PROFILES_REPOSITORY_TOKEN)
     private readonly profilesRepo: UserProfilesRepositoryPort,
+    private getTagsForTrackedItem: GetTagsForTrackedItemUseCase,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -158,12 +202,16 @@ export class TrackedItemDetailComponent implements OnInit {
       const comments = await this.getCommentsByTrackedItem.execute(this.id);
       this.comments.set(comments);
 
+      const tags = await this.getTagsForTrackedItem.execute(this.id);
+      this.allTags.set(tags);
+
       const authorIds = Array.from(new Set(comments.map((c) => c.authorId)));
       this.profiles.set(await this.profilesRepo.getByUserIds(authorIds));
     } catch (err) {
       console.error('Failed to load item:', err);
       this.item.set(null);
       this.comments.set([]);
+      this.allTags.set([]);
     } finally {
       this.loading.set(false);
     }
@@ -425,6 +473,7 @@ export class TrackedItemDetailComponent implements OnInit {
       }
 
       this.cancelCommentDialog();
+      this.reloadTags();
     } catch (err) {
       console.error('Add annotation failed:', err);
     } finally {
@@ -472,6 +521,7 @@ export class TrackedItemDetailComponent implements OnInit {
         next.set(me.id, { userId: me.id, displayName: me.displayName });
         this.profiles.set(next);
       }
+      await this.reloadTags();
     } catch (err) {
       console.error('Add fragment comment failed:', err);
     }
@@ -513,6 +563,10 @@ export class TrackedItemDetailComponent implements OnInit {
         this.comments.update((list) => [...list, result.comment!]);
       }
 
+      if (result.tags.length > 0) {
+        await this.reloadTags();
+      }
+
       const me = this.auth.user();
       if (me) {
         const next = new Map(this.profiles());
@@ -534,6 +588,22 @@ export class TrackedItemDetailComponent implements OnInit {
 
   closeContextPanel(): void {
     this.contextPanelOpen.set(false);
+  }
+
+  scrollToFragment(fragmentId: string): void {
+    const el = document.querySelector(
+      `[data-fragment-id="${fragmentId}"]`
+    ) as HTMLElement | null;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async reloadTags(): Promise<void> {
+    try {
+      this.allTags.set(await this.getTagsForTrackedItem.execute(this.id));
+    } catch (err) {
+      console.error('Failed to reload tags:', err);
+    }
   }
 
 }

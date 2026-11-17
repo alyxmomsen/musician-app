@@ -36,7 +36,10 @@
   @if (item(); as it) {
     <div class="three-column-layout">
       <!-- ЛЕВАЯ ПАНЕЛЬ: TOC -->
-      <app-fragment-toc [fragments]="it.fragments" />
+      <app-fragment-toc
+        [items]="tocItems()"
+        (itemClick)="scrollToFragment($event)"
+      />
 
       <!-- ЦЕНТР: основной контент -->
       <main class="center-panel">
@@ -53,7 +56,10 @@
         </div>
 
         <div class="item-tags">
-          <app-tag-chips [target]="{ type: 'tracked-item', trackedItemId: id }" />
+          <app-tag-chips
+            [target]="{ type: 'tracked-item', trackedItemId: id }"
+            (changed)="reloadTags()"
+          />
         </div>
 
         @if (commentsForItem().length > 0) {

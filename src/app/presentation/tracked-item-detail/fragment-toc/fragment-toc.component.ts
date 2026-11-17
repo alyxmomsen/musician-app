@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tracked-item-text-fragment.entity';
+import { TFragmentTocItem } from './fragment-toc.types';
 
 @Component({
   selector: 'app-fragment-toc',
@@ -10,15 +10,10 @@ import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tra
   styleUrls: ['./fragment-toc.component.scss'],
 })
 export class FragmentTocComponent {
-  @Input() fragments: TrackedItemTextFragment[] = [];
+  @Input() items: TFragmentTocItem[] = [];
+  @Output() itemClick = new EventEmitter<string>();
 
-  getLabel(fragment: TrackedItemTextFragment): string {
-    if (fragment.title && fragment.title.trim().length > 0) {
-      return fragment.title;
-    }
-    const preview = fragment.text.trim().slice(0, 40);
-    return preview.length < fragment.text.trim().length
-      ? `${preview}…`
-      : preview || 'Без названия';
+  onClick(id: string): void {
+    this.itemClick.emit(id);
   }
 }

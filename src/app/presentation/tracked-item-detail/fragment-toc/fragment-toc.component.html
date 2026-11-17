@@ -1,14 +1,30 @@
 <aside class="toc">
   <div class="toc-header">Фрагменты</div>
 
-  @if (fragments.length === 0) {
+  @if (items.length === 0) {
     <div class="toc-empty">Нет фрагментов</div>
   }
 
   <ul class="toc-list">
-    @for (fragment of fragments; track fragment.id) {
-      <li class="toc-item" [class.done]="fragment.isDone">
-        <span class="toc-label">{{ getLabel(fragment) }}</span>
+    @for (item of items; track item.id) {
+      <li
+        class="toc-item"
+        [class.done]="item.isDone"
+        (click)="onClick(item.id)"
+      >
+        <span class="toc-label">{{ item.label }}</span>
+        <div class="toc-indicators">
+          @if (item.commentCount > 0) {
+            <span class="toc-indicator" title="Комментарии">
+              <i class="pi pi-comment"></i>{{ item.commentCount }}
+            </span>
+          }
+          @if (item.tagCount > 0) {
+            <span class="toc-indicator" title="Теги">
+              <i class="pi pi-tag"></i>{{ item.tagCount }}
+            </span>
+          }
+        </div>
       </li>
     }
   </ul>

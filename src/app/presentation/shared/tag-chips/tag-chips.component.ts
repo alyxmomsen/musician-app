@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, signal, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,        // ← добавить
+  EventEmitter,  // ← добавить
+  OnInit,
+  signal,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -49,6 +57,8 @@ export class TagChipsComponent implements OnInit {
   editingDescriptionFor = signal<string | null>(null);
   editDescription = signal('');
   savingDescription = signal(false);
+
+  @Output() changed = new EventEmitter<void>();
 
   constructor(
     private getTags: GetTagsForTargetUseCase,
@@ -101,6 +111,7 @@ export class TagChipsComponent implements OnInit {
         );
       }
       this.cancelAdd();
+      this.changed.emit();
     } catch (err) {
       console.error('Add tag failed:', err);
     } finally {
@@ -112,6 +123,7 @@ export class TagChipsComponent implements OnInit {
     try {
       await this.removeTag.execute(tagId, this.target);
       this.tags.update((list) => list.filter((t) => t.id !== tagId));
+      this.changed.emit();
     } catch (err) {
       console.error('Remove tag failed:', err);
     }
@@ -151,6 +163,7 @@ export class TagChipsComponent implements OnInit {
         list.map((t) => (t.id === updated.id ? updated : t))
       );
       this.cancelEditDescription();
+      this.changed.emit();
     } catch (err) {
       console.error('Update description failed:', err);
     } finally {
