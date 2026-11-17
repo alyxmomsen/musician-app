@@ -34,123 +34,137 @@
   }
 
   @if (item(); as it) {
-    <div class="detail-header">
-      <div class="artist">{{ it.artistName }}</div>
-      <h1 class="title">{{ it.title }}</h1>
-    </div>
+    <div class="three-column-layout">
+      <!-- ЛЕВАЯ ПАНЕЛЬ: TOC -->
+      <app-fragment-toc [fragments]="it.fragments" />
 
-    <div class="progress-block">
-      <p-progressbar [value]="it.progress" [showValue]="true" />
-      <div class="progress-caption">
-        {{ completedCount }} из {{ it.fragments.length }} фрагментов
-      </div>
-    </div>
+      <!-- ЦЕНТР: основной контент -->
+      <main class="center-panel">
+        <div class="detail-header">
+          <div class="artist">{{ it.artistName }}</div>
+          <h1 class="title">{{ it.title }}</h1>
+        </div>
 
-    <div class="item-tags">
-      <app-tag-chips [target]="{ type: 'tracked-item', trackedItemId: id }" />
-    </div>
-
-    @if (commentsForItem().length > 0) {
-      <details class="item-comments">
-        <summary>{{ commentsForItem().length }} комментариев к треку</summary>
-        @for (comment of commentsForItem(); track comment.id) {
-          <div class="comment-item">
-            <div class="comment-main">
-              <span class="comment-text">{{ comment.text }}</span>
-              <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
-            </div>
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              severity="danger"
-              size="small"
-              styleClass="comment-delete-btn"
-              (onClick)="deleteCommentById(comment.id)"
-            />
+        <div class="progress-block">
+          <p-progressbar [value]="it.progress" [showValue]="true" />
+          <div class="progress-caption">
+            {{ completedCount }} из {{ it.fragments.length }} фрагментов
           </div>
+        </div>
+
+        <div class="item-tags">
+          <app-tag-chips [target]="{ type: 'tracked-item', trackedItemId: id }" />
+        </div>
+
+        @if (commentsForItem().length > 0) {
+          <details class="item-comments">
+            <summary>{{ commentsForItem().length }} комментариев к треку</summary>
+            @for (comment of commentsForItem(); track comment.id) {
+              <div class="comment-item">
+                <div class="comment-main">
+                  <span class="comment-text">{{ comment.text }}</span>
+                  <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
+                </div>
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  size="small"
+                  styleClass="comment-delete-btn"
+                  (onClick)="deleteCommentById(comment.id)"
+                />
+              </div>
+            }
+          </details>
         }
-      </details>
-    }
 
-    <div class="fragments" #fragmentsContainer (mouseup)="onFragmentsMouseUp($event)">
-      <h2>Фрагменты</h2>
+        <div class="fragments" #fragmentsContainer (mouseup)="onFragmentsMouseUp($event)">
+          <h2>Фрагменты</h2>
 
-      @if (it.fragments.length === 0) {
-        <div class="empty">Нет фрагментов</div>
-      }
+          @if (it.fragments.length === 0) {
+            <div class="empty">Нет фрагментов</div>
+          }
 
-      @for (fragment of it.fragments; track fragment.id) {
-        <div [attr.data-fragment-id]="fragment.id">
-          <app-fragment-card
-            [fragment]="fragment"
-            [trackedItemId]="id"
-            [comments]="commentsForFragment(fragment.id)"
-            [profiles]="profiles()"
-            (toggleDone)="onToggleDone($event)"
-            (markReviewed)="onMarkReviewed($event)"
-            (update)="onUpdateFragment($event)"
-            (delete)="onRemoveFragment($event)"
-            (deleteComment)="deleteCommentById($event)"
-            (addFragmentComment)="onAddFragmentComment($event)"
-          />
-        </div>
-      }
+          @for (fragment of it.fragments; track fragment.id) {
+            <div [attr.data-fragment-id]="fragment.id">
+              <app-fragment-card
+                [fragment]="fragment"
+                [trackedItemId]="id"
+                [comments]="commentsForFragment(fragment.id)"
+                [profiles]="profiles()"
+                (toggleDone)="onToggleDone($event)"
+                (markReviewed)="onMarkReviewed($event)"
+                (update)="onUpdateFragment($event)"
+                (delete)="onRemoveFragment($event)"
+                (deleteComment)="deleteCommentById($event)"
+                (addFragmentComment)="onAddFragmentComment($event)"
+              />
+            </div>
+          }
 
-      @if (!adding()) {
-        <p-button
-          label="Добавить фрагмент"
-          icon="pi pi-plus"
-          [text]="true"
-          (onClick)="startAdd()"
-        />
-      } @else {
-        <div class="add-form">
-          <input
-            pInputText
-            type="text"
-            [ngModel]="newFragmentTitle()"
-            (ngModelChange)="newFragmentTitle.set($event)"
-            placeholder="Название (необязательно)"
-            class="add-title"
-          />
-          <textarea
-            pTextarea
-            rows="3"
-            [ngModel]="newFragmentText()"
-            (ngModelChange)="newFragmentText.set($event)"
-            placeholder="Текст фрагмента"
-          ></textarea>
-          <div class="add-done">
-            <p-checkbox
-              [binary]="true"
-              [ngModel]="newFragmentIsDone()"
-              (ngModelChange)="newFragmentIsDone.set($event)"
-              inputId="add-frag-done"
-            />
-            <label for="add-frag-done">Уже выучен</label>
-          </div>
-          <div class="add-actions">
+          @if (!adding()) {
             <p-button
-              label="Сохранить"
-              icon="pi pi-check"
-              [loading]="saving()"
-              [disabled]="!newFragmentText().trim()"
-              (onClick)="submitAdd()"
-            />
-            <p-button
-              label="Отмена"
-              icon="pi pi-times"
-              severity="secondary"
+              label="Добавить фрагмент"
+              icon="pi pi-plus"
               [text]="true"
-              (onClick)="cancelAdd()"
+              (onClick)="startAdd()"
             />
-          </div>
+          } @else {
+            <div class="add-form">
+              <input
+                pInputText
+                type="text"
+                [ngModel]="newFragmentTitle()"
+                (ngModelChange)="newFragmentTitle.set($event)"
+                placeholder="Название (необязательно)"
+                class="add-title"
+              />
+              <textarea
+                pTextarea
+                rows="3"
+                [ngModel]="newFragmentText()"
+                (ngModelChange)="newFragmentText.set($event)"
+                placeholder="Текст фрагмента"
+              ></textarea>
+              <div class="add-done">
+                <p-checkbox
+                  [binary]="true"
+                  [ngModel]="newFragmentIsDone()"
+                  (ngModelChange)="newFragmentIsDone.set($event)"
+                  inputId="add-frag-done"
+                />
+                <label for="add-frag-done">Уже выучен</label>
+              </div>
+              <div class="add-actions">
+                <p-button
+                  label="Сохранить"
+                  icon="pi pi-check"
+                  [loading]="saving()"
+                  [disabled]="!newFragmentText().trim()"
+                  (onClick)="submitAdd()"
+                />
+                <p-button
+                  label="Отмена"
+                  icon="pi pi-times"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="cancelAdd()"
+                />
+              </div>
+            </div>
+          }
         </div>
-      }
+      </main>
+
+      <!-- ПРАВАЯ ПАНЕЛЬ: контекст -->
+      <app-context-panel
+        [open]="contextPanelOpen()"
+        (close)="closeContextPanel()"
+      />
     </div>
   }
 
-  <!-- Floating-кнопка: вне @if (item), на верхнем уровне -->
+  <!-- Floating-кнопка аннотации -->
   @if (pendingSelection() && !showCommentDialog()) {
     <p-button
       label="+ Аннотация"
@@ -161,7 +175,7 @@
     />
   }
 
-  <!-- Модалка: вне @if (item), на верхнем уровне -->
+  <!-- Модалка аннотации к диапазону -->
   @if (showCommentDialog()) {
     <div class="comment-dialog-overlay" (click)="cancelCommentDialog()">
       <div class="comment-dialog" (click)="$event.stopPropagation()">
@@ -182,7 +196,7 @@
           type="text"
           [ngModel]="newAnnotationTags()"
           (ngModelChange)="newAnnotationTags.set($event)"
-          placeholder="Теги через пробел (опционально), например: linkinpark/chesterpart english/words/tobe"
+          placeholder="Теги через пробел (опционально)"
           class="annotation-tags-input"
         />
 
@@ -206,6 +220,7 @@
     </div>
   }
 
+  <!-- Модалка комментария к треку -->
   @if (showItemCommentDialog()) {
     <div class="comment-dialog-overlay" (click)="cancelAddItemComment()">
       <div class="comment-dialog" (click)="$event.stopPropagation()">
@@ -246,6 +261,5 @@
         </div>
       </div>
     </div>
-  }         
-
+  }
 </div>

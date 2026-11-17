@@ -1,0 +1,18 @@
+<aside class="context-panel" [class.open]="open">
+  <div class="context-header">
+    <span class="context-title">Контекст</span>
+    <p-button
+      icon="pi pi-times"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      (onClick)="onClose()"
+    />
+  </div>
+
+  <div class="context-body">
+    <div class="context-empty">
+      Выберите аннотацию или индикатор, чтобы увидеть детали
+    </div>
+  </div>
+</aside>

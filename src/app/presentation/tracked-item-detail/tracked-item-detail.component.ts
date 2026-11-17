@@ -44,6 +44,9 @@ import { Inject } from '@angular/core';
 
 import { AddAnnotationUseCase } from '../../application/comment/use-cases/add-annotation.use-case';
 
+import { FragmentTocComponent } from './fragment-toc/fragment-toc.component';
+import { ContextPanelComponent } from './context-panel/context-panel.component';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -59,6 +62,9 @@ import { AddAnnotationUseCase } from '../../application/comment/use-cases/add-an
     FragmentCardComponent,
 
     TagChipsComponent,
+
+    FragmentTocComponent,
+    ContextPanelComponent,
   ],
   templateUrl: './tracked-item-detail.component.html',
   styleUrls: ['./tracked-item-detail.component.scss'],
@@ -110,6 +116,8 @@ export class TrackedItemDetailComponent implements OnInit {
   newItemCommentText = signal('');
   newItemCommentTags = signal('');
   savingItemComment = signal(false);
+
+  contextPanelOpen = signal(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -518,6 +526,14 @@ export class TrackedItemDetailComponent implements OnInit {
     } finally {
       this.savingItemComment.set(false);
     }
+  }
+
+  openContextPanel(): void {
+    this.contextPanelOpen.set(true);
+  }
+
+  closeContextPanel(): void {
+    this.contextPanelOpen.set(false);
   }
 
 }

@@ -1,0 +1,15 @@
+<aside class="toc">
+  <div class="toc-header">Фрагменты</div>
+
+  @if (fragments.length === 0) {
+    <div class="toc-empty">Нет фрагментов</div>
+  }
+
+  <ul class="toc-list">
+    @for (fragment of fragments; track fragment.id) {
+      <li class="toc-item" [class.done]="fragment.isDone">
+        <span class="toc-label">{{ getLabel(fragment) }}</span>
+      </li>
+    }
+  </ul>
+</aside>
