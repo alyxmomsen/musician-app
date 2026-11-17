@@ -98,12 +98,14 @@
                 [trackedItemId]="id"
                 [comments]="commentsForFragment(fragment.id)"
                 [profiles]="profiles()"
+                [commentCount]="tocMap().get(fragment.id)?.commentCount ?? 0"
+                [tagCount]="tocMap().get(fragment.id)?.tagCount ?? 0"
                 (toggleDone)="onToggleDone($event)"
                 (markReviewed)="onMarkReviewed($event)"
                 (update)="onUpdateFragment($event)"
                 (delete)="onRemoveFragment($event)"
-                (deleteComment)="deleteCommentById($event)"
                 (addFragmentComment)="onAddFragmentComment($event)"
+                (openContext)="openFragmentContext($event)"
               />
             </div>
           }
@@ -164,8 +166,10 @@
 
       <!-- ПРАВАЯ ПАНЕЛЬ: контекст -->
       <app-context-panel
-        [open]="contextPanelOpen()"
-        (close)="closeContextPanel()"
+        [open]="selectedContext() !== null"
+        [title]="contextTitle()"
+        [subtitle]="contextSubtitle()"
+        (close)="closeContext()"
       />
     </div>
   }

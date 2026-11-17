@@ -1,6 +1,6 @@
 <aside class="context-panel" [class.open]="open">
   <div class="context-header">
-    <span class="context-title">Контекст</span>
+    <span class="context-title">{{ title || 'Контекст' }}</span>
     <p-button
       icon="pi pi-times"
       [text]="true"
@@ -10,9 +10,13 @@
     />
   </div>
 
+  @if (subtitle) {
+    <div class="context-subtitle">{{ subtitle }}</div>
+  }
+
   <div class="context-body">
     <div class="context-empty">
-      Выберите аннотацию или индикатор, чтобы увидеть детали
+      Содержимое появится в следующей части
     </div>
   </div>
 </aside>

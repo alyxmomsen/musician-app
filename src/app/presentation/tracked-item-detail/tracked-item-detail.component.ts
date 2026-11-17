@@ -6,6 +6,7 @@ import {
   ViewChild,
   ElementRef,
   Inject,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -52,6 +53,10 @@ import { GetTagsForTrackedItemUseCase } from '../../application/tag/use-cases/ge
 import { HashTag } from '../../domain/tag/models/hash-tag.entity';
 import { TTagLinkTarget } from '../../domain/tag/models/tag-link.entity';
 import { TFragmentTocItem } from './fragment-toc/fragment-toc.types';
+import { MenuModule } from 'primeng/menu';
+import { TooltipModule } from 'primeng/tooltip';
+  // если HostListener/computed уже есть — не дублируй
+import { TContext } from './context-panel/context-panel.types';
 
 @Component({
   selector: 'app-tracked-item-detail',
@@ -71,6 +76,9 @@ import { TFragmentTocItem } from './fragment-toc/fragment-toc.types';
 
     FragmentTocComponent,
     ContextPanelComponent,
+
+    MenuModule,
+    TooltipModule,
   ],
   templateUrl: './tracked-item-detail.component.html',
   styleUrls: ['./tracked-item-detail.component.scss'],
@@ -160,6 +168,36 @@ export class TrackedItemDetailComponent implements OnInit {
         tagCount,
       };
     });
+  });
+
+  selectedContext = signal<TContext | null>(null);
+
+  tocMap = computed<Map<string, TFragmentTocItem>>(() => {
+    const map = new Map<string, TFragmentTocItem>();
+    for (const item of this.tocItems()) map.set(item.id, item);
+    return map;
+  });
+
+  contextTitle = computed<string>(() => {
+    const ctx = this.selectedContext();
+    if (!ctx) return '';
+    const it = this.item();
+    switch (ctx.type) {
+      case 'tracked-item':
+        return 'Трек';
+      case 'fragment': {
+        const fragment = it?.fragments.find((f) => f.id === ctx.fragmentId);
+        return fragment?.title?.trim() || 'Фрагмент';
+      }
+      case 'fragment-range':
+        return 'Диапазон текста';
+    }
+  });
+
+  contextSubtitle = computed<string | null>(() => {
+    const ctx = this.selectedContext();
+    if (ctx?.type === 'fragment-range') return ctx.quote;
+    return null;
   });
 
   constructor(
@@ -603,6 +641,37 @@ export class TrackedItemDetailComponent implements OnInit {
       this.allTags.set(await this.getTagsForTrackedItem.execute(this.id));
     } catch (err) {
       console.error('Failed to reload tags:', err);
+    }
+  }
+
+  openFragmentContext(event: {
+    fragmentId: string;
+    range?: { start: number; end: number; quote: string };
+  }): void {
+    if (event.range) {
+      this.selectedContext.set({
+        type: 'fragment-range',
+        fragmentId: event.fragmentId,
+        start: event.range.start,
+        end: event.range.end,
+        quote: event.range.quote,
+      });
+    } else {
+      this.selectedContext.set({
+        type: 'fragment',
+        fragmentId: event.fragmentId,
+      });
+    }
+  }
+
+  closeContext(): void {
+    this.selectedContext.set(null);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.selectedContext()) {
+      this.closeContext();
     }
   }
 

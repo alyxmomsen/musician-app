@@ -11,6 +11,8 @@ import { ButtonModule } from 'primeng/button';
 })
 export class ContextPanelComponent {
   @Input() open: boolean = false;
+  @Input() title: string = '';
+  @Input() subtitle: string | null = null;
   @Output() close = new EventEmitter<void>();
 
   onClose(): void {

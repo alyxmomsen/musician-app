@@ -1,8 +1,8 @@
 import {
   Component,
   Input,
-  Output,        // ← добавить
-  EventEmitter,  // ← добавить
+  Output,   
+  EventEmitter,
   OnInit,
   signal,
   inject,

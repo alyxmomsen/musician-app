@@ -64,31 +64,27 @@
       </div>
     </div>
 
-    @if (comments.length > 0) {
-      <div class="fragment-comments">
-        @for (comment of comments; track comment.id) {
-          <div
-            class="fragment-comment"
-            [attr.data-comment-id]="comment.id"
-            (click)="onCommentClick(comment.id, $event)"
-            (mouseenter)="onCommentHover(comment.id)"
-            (mouseleave)="onCommentLeave()"
+    @if (commentCount > 0 || tagCount > 0) {
+      <div class="fragment-indicators">
+        @if (commentCount > 0) {
+          <button
+            type="button"
+            class="fragment-indicator"
+            (click)="onIndicatorClick()"
           >
-            <div class="comment-body">
-              <div class="comment-main">
-                <span class="comment-text">{{ comment.text }}</span>
-                <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
-              </div>
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                severity="danger"
-                size="small"
-                styleClass="comment-delete-btn"
-                (onClick)="deleteComment.emit(comment.id); $event.stopPropagation()"
-              />
-            </div>
-          </div>
+            <i class="pi pi-comment"></i>
+            <span>{{ commentCount }}</span>
+          </button>
+        }
+        @if (tagCount > 0) {
+          <button
+            type="button"
+            class="fragment-indicator"
+            (click)="onIndicatorClick()"
+          >
+            <i class="pi pi-tag"></i>
+            <span>{{ tagCount }}</span>
+          </button>
         }
       </div>
     }

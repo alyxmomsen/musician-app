@@ -43,7 +43,7 @@ import { AnnotationHighlighterService } from '../../../core/services/annotation-
   ],
   templateUrl: './fragment-card.component.html',
   styleUrls: ['./fragment-card.component.scss'],
-  providers: [AnnotationHighlighterService], // ← per-component instance
+  providers: [AnnotationHighlighterService],
 })
 export class FragmentCardComponent
   implements AfterViewInit, OnChanges, OnDestroy
@@ -52,6 +52,8 @@ export class FragmentCardComponent
   @Input({ required: true }) trackedItemId!: string;
   @Input() comments: Comment[] = [];
   @Input() profiles: Map<string, TUserProfile> = new Map();
+  @Input() commentCount: number = 0;
+  @Input() tagCount: number = 0;
 
   @Output() toggleDone = new EventEmitter<{ fragmentId: string; done: boolean }>();
   @Output() markReviewed = new EventEmitter<string>();
@@ -61,11 +63,14 @@ export class FragmentCardComponent
     title: string;
   }>();
   @Output() delete = new EventEmitter<string>();
-  @Output() deleteComment = new EventEmitter<string>();
   @Output() addFragmentComment = new EventEmitter<{
     fragmentId: string;
     comment: string;
     tags: string[];
+  }>();
+  @Output() openContext = new EventEmitter<{
+    fragmentId: string;
+    range?: { start: number; end: number; quote: string };
   }>();
 
   isExpanded = signal(false);
@@ -78,6 +83,12 @@ export class FragmentCardComponent
   @ViewChild('fragmentText') fragmentText?: ElementRef<HTMLElement>;
 
   popup = signal<{ x: number; y: number; commentIds: string[] } | null>(null);
+
+  // модалка «комментарий к фрагменту»
+  showCommentDialog = signal(false);
+  newCommentText = signal('');
+  newAnnotationTags = signal('');
+  savingComment = signal(false); 
 
   private lastCommentsKey = '';
 
@@ -99,11 +110,6 @@ export class FragmentCardComponent
     },
   ];
 
-  showCommentDialog = signal(false);
-  newCommentText = signal('');
-  newAnnotationTags = signal('');
-  savingComment = signal(false);
-
   constructor(private highlighter: AnnotationHighlighterService) {}
 
   ngAfterViewInit(): void {
@@ -124,6 +130,8 @@ export class FragmentCardComponent
     this.highlighter.clear();
   }
 
+  // ---------- done / review ----------
+
   onToggleDone(done: boolean): void {
     this.toggleDone.emit({ fragmentId: this.fragment.id, done });
   }
@@ -134,38 +142,10 @@ export class FragmentCardComponent
 
   toggleExpand(): void {
     this.isExpanded.update((v) => !v);
-    // после смены DOM (clamped → expanded) viewchild обновится, ranges надо пересоздать
     setTimeout(() => this.applyHighlight(), 0);
   }
 
-  startAddComment(): void {
-    this.newCommentText.set('');
-    this.newAnnotationTags.set('');
-    this.showCommentDialog.set(true);
-  }
-
-  cancelAddComment(): void {
-    this.showCommentDialog.set(false);
-    this.newCommentText.set('');
-    this.newAnnotationTags.set('');
-  }
-
-  submitAddComment(): void {
-    const comment = this.newCommentText().trim();
-    const tagsInput = this.newAnnotationTags().trim();
-    const tags = tagsInput.length > 0
-      ? tagsInput.split(/\s+/).filter((t) => t.length > 0)
-      : [];
-
-    if (!comment && tags.length === 0) return;
-
-    this.addFragmentComment.emit({
-      fragmentId: this.fragment.id,
-      comment,
-      tags,
-    });
-    this.cancelAddComment();
-  }
+  // ---------- edit ----------
 
   startEdit(): void {
     this.editTitle.set(this.fragment.title);
@@ -202,52 +182,58 @@ export class FragmentCardComponent
     if (days < 7) return `${days} дн. назад`;
     return new Date(timestamp).toLocaleDateString('ru-RU');
   }
+  
+  // ---------- indicators / context ----------
 
-  getAuthorName(authorId: string): string {
-    return this.profiles.get(authorId)?.displayName ?? 'Неизвестный';
+  onIndicatorClick(): void {
+    this.openContext.emit({ fragmentId: this.fragment.id });
   }
 
-  onCommentClick(commentId: string, event: MouseEvent): void {
-    event.stopPropagation();
-    const c = this.comments.find((x) => x.id === commentId);
-    if (!c || c.target.type !== 'fragment-range') return;
+  // ---------- annotation (comment to fragment) ----------
 
-    if (!this.isExpanded()) {
-      this.isExpanded.set(true);
-      setTimeout(() => {
-        this.applyHighlight();
-        setTimeout(() => {
-          this.highlighter.scrollToAnnotation(commentId);
-        }, 0);
-      }, 0);
-      return;
-    }
-
-    this.highlighter.scrollToAnnotation(commentId);
+  startAddComment(): void {
+    this.newCommentText.set('');
+    this.newAnnotationTags.set('');
+    this.showCommentDialog.set(true);
   }
 
-  onCommentHover(commentId: string): void {
-    this.highlighter.setHovered(commentId);
+  cancelAddComment(): void {
+    this.showCommentDialog.set(false);
+    this.newCommentText.set('');
+    this.newAnnotationTags.set('');
   }
 
-  onCommentLeave(): void {
-    this.highlighter.setHovered(null);
+  submitAddComment(): void {
+    const comment = this.newCommentText().trim();
+    const tagsInput = this.newAnnotationTags().trim();
+    const tags =
+      tagsInput.length > 0
+        ? tagsInput.split(/\s+/).filter((t) => t.length > 0)
+        : [];
+
+    if (!comment && tags.length === 0) return;
+
+    this.addFragmentComment.emit({
+      fragmentId: this.fragment.id,
+      comment,
+      tags,
+    });
+    this.cancelAddComment();
   }
+
+  // ---------- highlight / popup ----------
 
   onCardMouseMove(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-
-    // не трогаем hover, если мышь не над текстом
     if (
-      target.closest('.fragment-comment') ||
       target.closest('.fragment-footer') ||
       target.closest('.fragment-header') ||
       target.closest('.annotation-popup') ||
-      target.closest('.edit-form')
+      target.closest('.edit-form') ||
+      target.closest('.fragment-indicators')
     ) {
       return;
     }
-
     const hovered = this.highlighter.hitTest(event.clientX, event.clientY);
     this.highlighter.setHovered(hovered);
   }
@@ -280,28 +266,26 @@ export class FragmentCardComponent
 
   selectFromPopup(commentId: string): void {
     this.closePopup();
-    this.scrollToCommentInList(commentId);
+    const c = this.comments.find((x) => x.id === commentId);
+    if (!c) return;
+    if (c.target.type === 'fragment-range') {
+      this.openContext.emit({
+        fragmentId: this.fragment.id,
+        range: {
+          start: c.target.start,
+          end: c.target.end,
+          quote: c.target.quote,
+        },
+      });
+    }
   }
 
   getCommentById(id: string): Comment | undefined {
     return this.comments.find((c) => c.id === id);
   }
 
-  private scrollToCommentInList(commentId: string): void {
-    const el = document.querySelector(
-      `[data-comment-id="${commentId}"]`
-    ) as HTMLElement | null;
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-    const inViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
-
-    if (!inViewport) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    el.classList.add('flash');
-    setTimeout(() => el.classList.remove('flash'), 1200);
+  getAuthorName(authorId: string): string {
+    return this.profiles.get(authorId)?.displayName ?? 'Неизвестный';
   }
 
   private commentsKey(comments: Comment[]): string {
@@ -317,13 +301,8 @@ export class FragmentCardComponent
   onDocumentClick(event: MouseEvent): void {
     if (!this.popup()) return;
     const target = event.target as HTMLElement;
-
-    // клик внутри popup — не закрываем
     if (target.closest('.annotation-popup')) return;
-
-    // клик по тексту — popup закрывается/переоткрывается в onTextClick
     if (target.closest('.fragment-text')) return;
-
     this.closePopup();
   }
 }

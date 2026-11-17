@@ -284,3 +284,35 @@
     justify-content: flex-end;
   }
 }
+
+.fragment-indicators {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+.fragment-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  background: transparent;
+  border: 1px solid #e3e3e8;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #f0f0f5;
+    border-color: #c0cad6;
+    color: #333;
+  }
+
+  i {
+    font-size: 0.75rem;
+  }
+}
