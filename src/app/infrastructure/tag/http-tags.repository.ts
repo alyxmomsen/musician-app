@@ -87,4 +87,19 @@ export class HttpTagsRepository implements TagsRepositoryPort {
       createdBy: dto.createdBy ?? '',
     };
   }
+
+  async getForComments(commentIds: string[]): Promise<Map<string, HashTag[]>> {
+    if (commentIds.length === 0) return new Map();
+    const dtos = await firstValueFrom(
+      this.http.post<Array<{ commentId: string; tags: HashTagDto[] }>>(
+        `${this.apiUrl}/for-comments`,
+        { commentIds }
+      )
+    );
+    const map = new Map<string, HashTag[]>();
+    for (const d of dtos) {
+      map.set(d.commentId, d.tags.map((t) => this.toEntity(t)));
+    }
+    return map;
+  }
 }

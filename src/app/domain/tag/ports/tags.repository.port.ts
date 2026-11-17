@@ -16,4 +16,5 @@ export interface TagsRepositoryPort {
   updateDescription(tagId: string, description: string): Promise<HashTag>;
   remove(tagId: string, target: TTagLinkTarget): Promise<void>;
   deleteTag(tagId: string): Promise<void>;
+  getForComments(commentIds: string[]): Promise<Map<string, HashTag[]>>;
 }

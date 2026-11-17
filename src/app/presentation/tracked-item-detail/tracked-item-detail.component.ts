@@ -58,6 +58,8 @@ import { TooltipModule } from 'primeng/tooltip';
   // если HostListener/computed уже есть — не дублируй
 import { TContext } from './context-panel/context-panel.types';
 
+import { GetTagsForCommentsUseCase } from '../../application/tag/use-cases/get-tags-for-comments.use-case';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -94,6 +96,7 @@ import { TContext } from './context-panel/context-panel.types';
     DeleteCommentUseCase,
     GetCommentsByTrackedItemUseCase,
     GetTagsForTrackedItemUseCase,
+    GetTagsForCommentsUseCase,
   ],
 })
 export class TrackedItemDetailComponent implements OnInit {
@@ -200,6 +203,8 @@ export class TrackedItemDetailComponent implements OnInit {
     return null;
   });
 
+  commentTags = signal<Map<string, HashTag[]>>(new Map());
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -220,6 +225,7 @@ export class TrackedItemDetailComponent implements OnInit {
     @Inject(USER_PROFILES_REPOSITORY_TOKEN)
     private readonly profilesRepo: UserProfilesRepositoryPort,
     private getTagsForTrackedItem: GetTagsForTrackedItemUseCase,
+    private getTagsForComments: GetTagsForCommentsUseCase,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -245,11 +251,19 @@ export class TrackedItemDetailComponent implements OnInit {
 
       const authorIds = Array.from(new Set(comments.map((c) => c.authorId)));
       this.profiles.set(await this.profilesRepo.getByUserIds(authorIds));
+
+      const commentIds = comments.map((c) => c.id);
+      const commentTags = await this.getTagsForComments.execute(commentIds);
+      this.commentTags.set(commentTags);
+
     } catch (err) {
       console.error('Failed to load item:', err);
       this.item.set(null);
       this.comments.set([]);
       this.allTags.set([]);
+
+      this.commentTags.set(new Map());
+
     } finally {
       this.loading.set(false);
     }
@@ -512,6 +526,11 @@ export class TrackedItemDetailComponent implements OnInit {
 
       this.cancelCommentDialog();
       this.reloadTags();
+
+      if (result.tags.length > 0) {
+        await this.reloadCommentTags();
+      }
+
     } catch (err) {
       console.error('Add annotation failed:', err);
     } finally {
@@ -551,6 +570,10 @@ export class TrackedItemDetailComponent implements OnInit {
 
       if (result.comment) {
         this.comments.update((list) => [...list, result.comment!]);
+      }
+
+      if (result.tags.length > 0) {
+        await this.reloadCommentTags();
       }
 
       const me = this.auth.user();
@@ -603,6 +626,8 @@ export class TrackedItemDetailComponent implements OnInit {
 
       if (result.tags.length > 0) {
         await this.reloadTags();
+
+        await this.reloadCommentTags();
       }
 
       const me = this.auth.user();
@@ -672,6 +697,17 @@ export class TrackedItemDetailComponent implements OnInit {
   onEscape(): void {
     if (this.selectedContext()) {
       this.closeContext();
+    }
+  }
+
+  async reloadCommentTags(): Promise<void> {
+    try {
+      const commentIds = this.comments().map((c) => c.id);
+      this.commentTags.set(
+        await this.getTagsForComments.execute(commentIds)
+      );
+    } catch (err) {
+      console.error('Failed to reload comment tags:', err);
     }
   }
 
