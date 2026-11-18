@@ -101,6 +101,7 @@
                 [commentCount]="tocMap().get(fragment.id)?.commentCount ?? 0"
                 [tagCount]="tocMap().get(fragment.id)?.tagCount ?? 0"
                 [expandTrigger]="expandTrigger()"
+                [scrollToComment]="scrollToComment()"
                 (toggleDone)="onToggleDone($event)"
                 (markReviewed)="onMarkReviewed($event)"
                 (update)="onUpdateFragment($event)"
@@ -178,6 +179,7 @@
         (deleteComment)="onPanelDeleteComment($event)"
         (removeTag)="onPanelRemoveTag($event)"
         (addAnnotation)="onPanelAddAnnotation($event)"
+        (commentClick)="onPanelCommentClick($event)"
       />
     </div>
   }

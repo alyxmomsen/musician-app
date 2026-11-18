@@ -114,6 +114,8 @@ export class FragmentCardComponent
 
   @Input() expandTrigger: string | null = null;
 
+  @Input() scrollToComment: string | null = null;
+
   constructor(private highlighter: AnnotationHighlighterService) {}
 
   ngAfterViewInit(): void {
@@ -133,6 +135,15 @@ export class FragmentCardComponent
     if (changes['expandTrigger'] && this.expandTrigger === this.fragment.id) {
       this.isExpanded.set(true);
       setTimeout(() => this.applyHighlight(), 0);
+    }
+
+    if (changes['scrollToComment'] && this.scrollToComment) {
+      const belongs = this.comments.some((c) => c.id === this.scrollToComment);
+      if (belongs) {
+        setTimeout(() => {
+          this.highlighter.scrollToAnnotation(this.scrollToComment!);
+        }, 50);
+      }
     }
   }
 

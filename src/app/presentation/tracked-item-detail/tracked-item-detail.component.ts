@@ -277,6 +277,8 @@ export class TrackedItemDetailComponent implements OnInit {
 
   expandTrigger = signal<string | null>(null);
 
+  scrollToComment = signal<string | null>(null);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -888,6 +890,20 @@ export class TrackedItemDetailComponent implements OnInit {
       // сброс, чтобы следующий клик на тот же фрагмент сработал
       this.expandTrigger.set(null);
     }, 50);
+  }
+
+  onPanelCommentClick(comment: Comment): void {
+    if (comment.target.type === 'fragment-range') {
+      this.scrollToComment.set(comment.id);
+      setTimeout(() => this.scrollToComment.set(null), 100);
+    } else if (comment.target.type === 'fragment') {
+      const fragmentId = comment.target.fragmentId;
+      this.expandTrigger.set(fragmentId);
+      setTimeout(() => {
+        this.scrollToFragment(fragmentId);
+        this.expandTrigger.set(null);
+      }, 50);
+    }
   }
 
 }

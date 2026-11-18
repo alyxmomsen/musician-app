@@ -23,7 +23,7 @@
       <div class="context-section">
         <div class="section-title">Комментарии</div>
         @for (comment of comments; track comment.id) {
-          <div class="context-comment">
+          <div class="context-comment" (click)="onCommentClick(comment)">
             <div class="comment-header">
               <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
               <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
@@ -48,7 +48,7 @@
                 [text]="true"
                 severity="danger"
                 size="small"
-                (onClick)="onDeleteComment(comment.id)"
+                (onClick)="onDeleteComment(comment.id); $event.stopPropagation()"
               />
             </div>
           </div>

@@ -63,12 +63,11 @@ export class AnnotationHighlighterService {
     const rects = range.getClientRects();
     if (rects.length === 0) return false;
 
-    const first = rects[0];
-    const inViewport = first.top >= 0 && first.bottom <= window.innerHeight;
-
-    if (!inViewport) {
-      const target = window.scrollY + first.top - window.innerHeight / 3;
-      window.scrollTo({ top: target, behavior: 'smooth' });
+    // scrollIntoView найдёт ближайший scrollable ancestor (center-panel)
+    // и прокрутит его. window не трогает, если overflow: hidden.
+    const container = range.startContainer.parentElement;
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     this.flash(commentId);

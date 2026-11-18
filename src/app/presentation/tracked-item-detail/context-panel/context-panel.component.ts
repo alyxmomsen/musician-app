@@ -46,6 +46,8 @@ export class ContextPanelComponent {
   newCommentText = signal('');
   newAnnotationTags = signal('');
 
+  @Output() commentClick = new EventEmitter<Comment>();
+
   onClose(): void {
     this.close.emit();
   }
@@ -99,5 +101,9 @@ export class ContextPanelComponent {
 
     this.addAnnotation.emit({ comment, tags });
     this.cancelAdd();
+  }
+
+  onCommentClick(comment: Comment): void {
+    this.commentClick.emit(comment);
   }
 }
