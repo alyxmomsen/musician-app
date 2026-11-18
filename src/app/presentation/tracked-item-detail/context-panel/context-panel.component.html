@@ -15,8 +15,114 @@
   }
 
   <div class="context-body">
-    <div class="context-empty">
-      Содержимое появится в следующей части
-    </div>
+    @if (comments.length === 0 && tags.length === 0 && !adding()) {
+      <div class="context-empty">Нет комментариев и тегов</div>
+    }
+
+    @if (comments.length > 0) {
+      <div class="context-section">
+        <div class="section-title">Комментарии</div>
+        @for (comment of comments; track comment.id) {
+          <div class="context-comment">
+            <div class="comment-header">
+              <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
+              <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+            </div>
+            <div class="comment-text">{{ comment.text }}</div>
+            @if (getTagsForComment(comment.id).length > 0) {
+              <div class="comment-tags">
+                @for (tag of getTagsForComment(comment.id); track tag.id) {
+                  <span
+                    class="tag-chip small"
+                    [pTooltip]="tag.description || ''"
+                    [tooltipDisabled]="!tag.description"
+                  >
+                    {{ tag.originalText }}
+                  </span>
+                }
+              </div>
+            }
+            <div class="comment-actions">
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (onClick)="onDeleteComment(comment.id)"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (tags.length > 0) {
+      <div class="context-section">
+        <div class="section-title">Теги</div>
+        <div class="context-tags">
+          @for (tag of tags; track tag.id) {
+            <span
+              class="tag-chip"
+              [pTooltip]="tag.description || ''"
+              [tooltipDisabled]="!tag.description"
+            >
+              {{ tag.originalText }}
+              <button
+                type="button"
+                class="tag-remove"
+                (click)="onRemoveTag(tag.id)"
+              >
+                <i class="pi pi-times"></i>
+              </button>
+            </span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (!adding()) {
+      <p-button
+        label="Добавить"
+        icon="pi pi-plus"
+        [text]="true"
+        size="small"
+        (onClick)="startAdd()"
+      />
+    } @else {
+      <div class="add-form">
+        <textarea
+          pTextarea
+          rows="3"
+          [ngModel]="newCommentText()"
+          (ngModelChange)="newCommentText.set($event)"
+          placeholder="Комментарий (опционально)"
+        ></textarea>
+        <input
+          pInputText
+          type="text"
+          [ngModel]="newAnnotationTags()"
+          (ngModelChange)="newAnnotationTags.set($event)"
+          placeholder="Теги через пробел (опционально)"
+          class="annotation-tags-input"
+        />
+        <div class="add-actions">
+          <p-button
+            label="Сохранить"
+            icon="pi pi-check"
+            size="small"
+            [disabled]="!newCommentText().trim() && !newAnnotationTags().trim()"
+            (onClick)="submitAdd()"
+          />
+          <p-button
+            label="Отмена"
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            (onClick)="cancelAdd()"
+          />
+        </div>
+      </div>
+    }
   </div>
 </aside>

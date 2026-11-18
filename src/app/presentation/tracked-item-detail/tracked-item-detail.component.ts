@@ -30,7 +30,7 @@ import { DeleteCommentUseCase } from '../../application/comment/use-cases/delete
 import { GetCommentsByTrackedItemUseCase } from '../../application/comment/use-cases/get-comments-by-tracked-item.use-case';
 
 import { TrackedItem } from '../../domain/tracked-item/models/tracked-item.entity';
-import { Comment } from '../../domain/comment/models/comment.entity';
+import { Comment, TCommentTarget } from '../../domain/comment/models/comment.entity';
 import { SelectionService } from '../../core/services/selection.service';
 import { FragmentCardComponent } from './fragment-card/fragment-card.component';
 
@@ -59,6 +59,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TContext } from './context-panel/context-panel.types';
 
 import { GetTagsForCommentsUseCase } from '../../application/tag/use-cases/get-tags-for-comments.use-case';
+
+import { RemoveTagUseCase } from '../../application/tag/use-cases/remove-tag.use-case';
 
 @Component({
   selector: 'app-tracked-item-detail',
@@ -97,6 +99,7 @@ import { GetTagsForCommentsUseCase } from '../../application/tag/use-cases/get-t
     GetCommentsByTrackedItemUseCase,
     GetTagsForTrackedItemUseCase,
     GetTagsForCommentsUseCase,
+    RemoveTagUseCase,
   ],
 })
 export class TrackedItemDetailComponent implements OnInit {
@@ -205,6 +208,73 @@ export class TrackedItemDetailComponent implements OnInit {
 
   commentTags = signal<Map<string, HashTag[]>>(new Map());
 
+
+  contextComments = computed<Comment[]>(() => {
+    const ctx = this.selectedContext();
+    if (!ctx) return [];
+    const all = this.comments();
+
+    if (ctx.type === 'tracked-item') {
+      return all.filter((c) => c.target.type === 'tracked-item');
+    }
+
+    if (ctx.type === 'fragment') {
+      return all.filter(
+        (c) =>
+          c.target.type === 'fragment' &&
+          c.target.fragmentId === ctx.fragmentId
+      );
+    }
+
+    if (ctx.type === 'fragment-range') {
+      return all.filter(
+        (c) =>
+          c.target.type === 'fragment-range' &&
+          c.target.fragmentId === ctx.fragmentId &&
+          c.target.start === ctx.start &&
+          c.target.end === ctx.end
+      );
+    }
+
+    return [];
+  });
+
+  contextTags = computed<HashTag[]>(() => {
+    const ctx = this.selectedContext();
+    if (!ctx) return [];
+    const all = this.allTags();
+
+    if (ctx.type === 'tracked-item') {
+      return all
+        .filter((t) => t.target.type === 'tracked-item')
+        .map((t) => t.tag);
+    }
+
+    if (ctx.type === 'fragment') {
+      return all
+        .filter(
+          (t) =>
+            t.target.type === 'fragment' &&
+            t.target.fragmentId === ctx.fragmentId
+        )
+        .map((t) => t.tag);
+    }
+
+    if (ctx.type === 'fragment-range') {
+      return all
+        .filter(
+          (t) =>
+            t.target.type === 'fragment-range' &&
+            t.target.fragmentId === ctx.fragmentId &&
+            t.target.start === ctx.start &&
+            t.target.end === ctx.end
+        )
+        .map((t) => t.tag);
+    }
+
+    return [];
+  });
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -226,6 +296,8 @@ export class TrackedItemDetailComponent implements OnInit {
     private readonly profilesRepo: UserProfilesRepositoryPort,
     private getTagsForTrackedItem: GetTagsForTrackedItemUseCase,
     private getTagsForComments: GetTagsForCommentsUseCase,
+
+    private removeTag: RemoveTagUseCase,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -402,8 +474,7 @@ export class TrackedItemDetailComponent implements OnInit {
   commentsForFragment(fragmentId: string): Comment[] {
     return this.comments().filter(
       (c) =>
-        (c.target.type === 'fragment-range' &&
-          c.target.fragmentId === fragmentId) ||
+        (c.target.type === 'fragment-range' && c.target.fragmentId === fragmentId) ||
         (c.target.type === 'fragment' && c.target.fragmentId === fragmentId)
     );
   }
@@ -709,6 +780,105 @@ export class TrackedItemDetailComponent implements OnInit {
     } catch (err) {
       console.error('Failed to reload comment tags:', err);
     }
+  }
+
+  async onPanelDeleteComment(id: string): Promise<void> {
+    await this.deleteCommentById(id);
+    await this.reloadCommentTags();
+    await this.reloadTags();
+  }
+
+  async onPanelRemoveTag(tagId: string): Promise<void> {
+    const ctx = this.selectedContext();
+    if (!ctx) return;
+
+    let target: TTagLinkTarget | null = null;
+    if (ctx.type === 'tracked-item') {
+      target = { type: 'tracked-item', trackedItemId: this.id };
+    } else if (ctx.type === 'fragment') {
+      target = {
+        type: 'fragment',
+        trackedItemId: this.id,
+        fragmentId: ctx.fragmentId,
+      };
+    } else if (ctx.type === 'fragment-range') {
+      target = {
+        type: 'fragment-range',
+        trackedItemId: this.id,
+        fragmentId: ctx.fragmentId,
+        start: ctx.start,
+        end: ctx.end,
+        quote: ctx.quote,
+      };
+    }
+    if (!target) return;
+
+    try {
+      await this.removeTag.execute(tagId, target);
+      await this.reloadTags();
+    } catch (err) {
+      console.error('Remove tag failed:', err);
+    }
+  }
+
+  async onPanelAddAnnotation(event: {
+    comment: string;
+    tags: string[];
+  }): Promise<void> {
+    const ctx = this.selectedContext();
+    if (!ctx) return;
+
+    let target: TCommentTarget | null = null;
+    if (ctx.type === 'tracked-item') {
+      target = { type: 'tracked-item', trackedItemId: this.id };
+    } else if (ctx.type === 'fragment') {
+      target = {
+        type: 'fragment',
+        trackedItemId: this.id,
+        fragmentId: ctx.fragmentId,
+      };
+    } else if (ctx.type === 'fragment-range') {
+      target = {
+        type: 'fragment-range',
+        trackedItemId: this.id,
+        fragmentId: ctx.fragmentId,
+        start: ctx.start,
+        end: ctx.end,
+        quote: ctx.quote,
+      };
+    }
+    if (!target) return;
+
+    try {
+      const result = await this.addAnnotation.execute(
+        event.comment || null,
+        event.tags,
+        target
+      );
+
+      if (result.comment) {
+        this.comments.update((list) => [...list, result.comment!]);
+      }
+
+      const me = this.auth.user();
+      if (me) {
+        const next = new Map(this.profiles());
+        next.set(me.id, { userId: me.id, displayName: me.displayName });
+        this.profiles.set(next);
+      }
+
+      if (result.tags.length > 0) {
+        await this.reloadCommentTags();
+        await this.reloadTags();
+      }
+    } catch (err) {
+      console.error('Add annotation failed:', err);
+    }
+  }
+
+  onTocItemClick(fragmentId: string): void {
+    this.scrollToFragment(fragmentId);
+    this.openFragmentContext({ fragmentId });
   }
 
 }

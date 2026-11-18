@@ -38,7 +38,7 @@
       <!-- ЛЕВАЯ ПАНЕЛЬ: TOC -->
       <app-fragment-toc
         [items]="tocItems()"
-        (itemClick)="scrollToFragment($event)"
+        (itemClick)="onTocItemClick($event)"
       />
 
       <!-- ЦЕНТР: основной контент -->
@@ -169,7 +169,14 @@
         [open]="selectedContext() !== null"
         [title]="contextTitle()"
         [subtitle]="contextSubtitle()"
+        [comments]="contextComments()"
+        [commentTags]="commentTags()"
+        [tags]="contextTags()"
+        [profiles]="profiles()"
         (close)="closeContext()"
+        (deleteComment)="onPanelDeleteComment($event)"
+        (removeTag)="onPanelRemoveTag($event)"
+        (addAnnotation)="onPanelAddAnnotation($event)"
       />
     </div>
   }
