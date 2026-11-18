@@ -110,6 +110,10 @@ export class FragmentCardComponent
     },
   ];
 
+  @Input() forceExpanded: boolean = false;
+
+  @Input() expandTrigger: string | null = null;
+
   constructor(private highlighter: AnnotationHighlighterService) {}
 
   ngAfterViewInit(): void {
@@ -118,10 +122,16 @@ export class FragmentCardComponent
 
   ngOnChanges(changes: SimpleChanges): void {
     const c = changes['comments'];
-    if (!c) return;
-    const key = this.commentsKey(this.comments);
-    if (key !== this.lastCommentsKey) {
-      this.lastCommentsKey = key;
+    if (c) {
+      const key = this.commentsKey(this.comments);
+      if (key !== this.lastCommentsKey) {
+        this.lastCommentsKey = key;
+        setTimeout(() => this.applyHighlight(), 0);
+      }
+    }
+
+    if (changes['expandTrigger'] && this.expandTrigger === this.fragment.id) {
+      this.isExpanded.set(true);
       setTimeout(() => this.applyHighlight(), 0);
     }
   }

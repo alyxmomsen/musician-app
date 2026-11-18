@@ -275,6 +275,8 @@ export class TrackedItemDetailComponent implements OnInit {
     return [];
   });
 
+  expandTrigger = signal<string | null>(null);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -877,8 +879,15 @@ export class TrackedItemDetailComponent implements OnInit {
   }
 
   onTocItemClick(fragmentId: string): void {
-    this.scrollToFragment(fragmentId);
-    this.openFragmentContext({ fragmentId });
+    // 1. Развернуть фрагмент
+    this.expandTrigger.set(fragmentId);
+    // 2. Скролл (с небольшой задержкой, чтобы DOM обновился)
+    setTimeout(() => {
+      this.scrollToFragment(fragmentId);
+      this.openFragmentContext({ fragmentId });
+      // сброс, чтобы следующий клик на тот же фрагмент сработал
+      this.expandTrigger.set(null);
+    }, 50);
   }
 
 }
