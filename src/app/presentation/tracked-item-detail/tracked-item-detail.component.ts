@@ -140,7 +140,7 @@ export class TrackedItemDetailComponent implements OnInit {
 
   contextPanelOpen = signal(false);
 
-  allTags = signal<Array<{ tag: HashTag; target: TTagLinkTarget }>>([]);
+  allTags = signal<Array<{ linkId: string; tag: HashTag; target: TTagLinkTarget }>>([]);
 
   tocItems = computed<TFragmentTocItem[]>(() => {
     const it = this.item();
@@ -904,6 +904,16 @@ export class TrackedItemDetailComponent implements OnInit {
         this.expandTrigger.set(null);
       }, 50);
     }
+  }
+
+  tagsForFragment(fragmentId: string): Array<{ id: string; target: TTagLinkTarget }> {
+    return this.allTags()
+      .filter(
+        (t) =>
+          (t.target.type === 'fragment' && t.target.fragmentId === fragmentId) ||
+          (t.target.type === 'fragment-range' && t.target.fragmentId === fragmentId)
+      )
+      .map((t) => ({ id: t.linkId, target: t.target }));
   }
 
 }

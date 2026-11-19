@@ -13,7 +13,7 @@ export class GetTagsForTrackedItemUseCase {
 
   execute(
     trackedItemId: string
-  ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>> {
+  ): Promise<Array<{ linkId: string; tag: HashTag; target: TTagLinkTarget }>> {
     return this.repo.getForTrackedItem(trackedItemId);
   }
 }

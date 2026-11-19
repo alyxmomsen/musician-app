@@ -6,7 +6,8 @@ export interface TagsRepositoryPort {
   getForTarget(target: TTagLinkTarget): Promise<HashTag[]>;
   getForTrackedItem(
     trackedItemId: string
-  ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>>;
+  ): Promise<Array<{ linkId: string; tag: HashTag; target: TTagLinkTarget }>>;
+  getForComments(commentIds: string[]): Promise<Map<string, HashTag[]>>;
   getTargetsForTag(tagId: string): Promise<TTagLinkTarget[]>;
   add(
     tagText: string,
@@ -16,5 +17,4 @@ export interface TagsRepositoryPort {
   updateDescription(tagId: string, description: string): Promise<HashTag>;
   remove(tagId: string, target: TTagLinkTarget): Promise<void>;
   deleteTag(tagId: string): Promise<void>;
-  getForComments(commentIds: string[]): Promise<Map<string, HashTag[]>>;
 }

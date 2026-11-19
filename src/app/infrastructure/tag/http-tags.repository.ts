@@ -26,13 +26,14 @@ export class HttpTagsRepository implements TagsRepositoryPort {
 
   async getForTrackedItem(
     trackedItemId: string
-  ): Promise<Array<{ tag: HashTag; target: TTagLinkTarget }>> {
+  ): Promise<Array<{ linkId: string; tag: HashTag; target: TTagLinkTarget }>> {
     const dtos = await firstValueFrom(
-      this.http.get<Array<{ tag: HashTagDto; target: TTagLinkTarget }>>(
-        `${this.apiUrl}/for-tracked-item/${trackedItemId}`
-      )
+      this.http.get<
+        Array<{ linkId: string; tag: HashTagDto; target: TTagLinkTarget }>
+      >(`${this.apiUrl}/for-tracked-item/${trackedItemId}`)
     );
     return dtos.map((d) => ({
+      linkId: d.linkId,
       tag: this.toEntity(d.tag),
       target: d.target,
     }));

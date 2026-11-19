@@ -97,6 +97,7 @@
                 [fragment]="fragment"
                 [trackedItemId]="id"
                 [comments]="commentsForFragment(fragment.id)"
+                [tags]="tagsForFragment(fragment.id)"
                 [profiles]="profiles()"
                 [commentCount]="tocMap().get(fragment.id)?.commentCount ?? 0"
                 [tagCount]="tocMap().get(fragment.id)?.tagCount ?? 0"

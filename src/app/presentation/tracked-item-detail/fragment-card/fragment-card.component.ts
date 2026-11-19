@@ -27,6 +27,8 @@ import { Comment } from '../../../domain/comment/models/comment.entity';
 import { TUserProfile } from '../../../domain/user/ports/user-profiles.repository.port';
 import { AnnotationHighlighterService } from '../../../core/services/annotation-highlighter.service';
 
+import { TTagLinkTarget } from '../../../domain/tag/models/tag-link.entity';
+
 @Component({
   selector: 'app-fragment-card',
   standalone: true,
@@ -116,6 +118,8 @@ export class FragmentCardComponent
 
   @Input() scrollToComment: string | null = null;
 
+  @Input() tags: Array<{ id: string; target: TTagLinkTarget }> = [];
+
   constructor(private highlighter: AnnotationHighlighterService) {}
 
   ngAfterViewInit(): void {
@@ -130,6 +134,10 @@ export class FragmentCardComponent
         this.lastCommentsKey = key;
         setTimeout(() => this.applyHighlight(), 0);
       }
+    }
+
+    if (changes['tags']) {
+      setTimeout(() => this.applyHighlight(), 0);
     }
 
     if (changes['expandTrigger'] && this.expandTrigger === this.fragment.id) {
@@ -255,12 +263,15 @@ export class FragmentCardComponent
     ) {
       return;
     }
-    const hovered = this.highlighter.hitTest(event.clientX, event.clientY);
-    this.highlighter.setHovered(hovered);
+    const commentId = this.highlighter.hitTestComment(event.clientX, event.clientY);
+    const tagId = this.highlighter.hitTestTag(event.clientX, event.clientY);
+    this.highlighter.setHoveredComment(commentId);
+    this.highlighter.setHoveredTag(tagId);
   }
 
   onCardMouseLeave(): void {
-    this.highlighter.setHovered(null);
+    this.highlighter.setHoveredComment(null);
+    this.highlighter.setHoveredTag(null);
   }
 
   onTextClick(event: MouseEvent): void {
@@ -269,16 +280,33 @@ export class FragmentCardComponent
       return;
     }
 
-    const ids = this.highlighter.getCommentIdsAt(event.clientX, event.clientY);
-    if (ids.length === 0) {
-      if (this.popup()) {
+    const commentIds = this.highlighter.getCommentIdsAt(event.clientX, event.clientY);
+    if (commentIds.length > 0) {
+      this.popup.set({ x: event.clientX, y: event.clientY, commentIds });
+      return;
+    }
+
+    const tagIds = this.highlighter.getTagIdsAt(event.clientX, event.clientY);
+    if (tagIds.length > 0) {
+      const tag = this.tags.find((t) => tagIds.includes(t.id));
+      if (tag && tag.target.type === 'fragment-range') {
+        this.openContext.emit({
+          fragmentId: this.fragment.id,
+          range: {
+            start: tag.target.start,
+            end: tag.target.end,
+            quote: tag.target.quote,
+          },
+        });
+      }
+      return;
+    }
+
+    if (this.popup()) {
         this.closePopup();
         return;
       }
       this.toggleExpand();
-      return;
-    }
-    this.popup.set({ x: event.clientX, y: event.clientY, commentIds: ids });
   }
 
   closePopup(): void {
@@ -315,7 +343,7 @@ export class FragmentCardComponent
 
   private applyHighlight(): void {
     const el = this.fragmentText?.nativeElement;
-    if (el) this.highlighter.highlight(el, this.comments);
+    if (el) this.highlighter.highlight(el, this.comments, this.tags);
   }
 
   @HostListener('document:click', ['$event'])
@@ -326,4 +354,20 @@ export class FragmentCardComponent
     if (target.closest('.fragment-text')) return;
     this.closePopup();
   }
+
+  // getCommentIdsAt(x: number, y: number): string[] {
+  //   const result: string[] = [];
+  //   for (const [id, range] of this.commentRanges.entries()) {
+  //     if (this.rectsContainPoint(range, x, y)) result.push(id);
+  //   }
+  //   return result;
+  // }
+
+  // getTagIdsAt(x: number, y: number): string[] {
+  //   const result: string[] = [];
+  //   for (const [id, range] of this.tagRanges.entries()) {
+  //     if (this.rectsContainPoint(range, x, y)) result.push(id);
+  //   }
+  //   return result;
+  // }
 }
