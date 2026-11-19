@@ -5,6 +5,8 @@ export type TContext =
       start: number;
       end: number;
       quote: string;
+      anchorCommentIds: string[];
+      anchorTagIds: string[];
     }
   | {
       type: 'fragment';

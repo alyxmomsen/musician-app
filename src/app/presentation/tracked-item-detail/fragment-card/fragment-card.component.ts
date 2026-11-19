@@ -10,7 +10,6 @@ import {
   OnChanges,
   SimpleChanges,
   OnDestroy,
-  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxClamp } from '@chitovas/ngx-clamp';
@@ -24,10 +23,9 @@ import { TextareaModule } from 'primeng/textarea';
 import { MenuItem } from 'primeng/api';
 import { TrackedItemTextFragment } from '../../../domain/tracked-item/models/tracked-item-text-fragment.entity';
 import { Comment } from '../../../domain/comment/models/comment.entity';
+import { TTagLinkTarget } from '../../../domain/tag/models/tag-link.entity';
 import { TUserProfile } from '../../../domain/user/ports/user-profiles.repository.port';
 import { AnnotationHighlighterService } from '../../../core/services/annotation-highlighter.service';
-
-import { TTagLinkTarget } from '../../../domain/tag/models/tag-link.entity';
 
 @Component({
   selector: 'app-fragment-card',
@@ -53,9 +51,12 @@ export class FragmentCardComponent
   @Input({ required: true }) fragment!: TrackedItemTextFragment;
   @Input({ required: true }) trackedItemId!: string;
   @Input() comments: Comment[] = [];
+  @Input() tags: Array<{ id: string; target: TTagLinkTarget }> = [];
   @Input() profiles: Map<string, TUserProfile> = new Map();
   @Input() commentCount: number = 0;
   @Input() tagCount: number = 0;
+  @Input() expandTrigger: string | null = null;
+  @Input() scrollToComment: string | null = null;
 
   @Output() toggleDone = new EventEmitter<{ fragmentId: string; done: boolean }>();
   @Output() markReviewed = new EventEmitter<string>();
@@ -73,6 +74,8 @@ export class FragmentCardComponent
   @Output() openContext = new EventEmitter<{
     fragmentId: string;
     range?: { start: number; end: number; quote: string };
+    anchorCommentIds?: string[];
+    anchorTagIds?: string[];
   }>();
 
   isExpanded = signal(false);
@@ -82,15 +85,12 @@ export class FragmentCardComponent
   editText = signal('');
   saving = signal(false);
 
-  @ViewChild('fragmentText') fragmentText?: ElementRef<HTMLElement>;
-
-  popup = signal<{ x: number; y: number; commentIds: string[] } | null>(null);
-
-  // модалка «комментарий к фрагменту»
   showCommentDialog = signal(false);
   newCommentText = signal('');
   newAnnotationTags = signal('');
-  savingComment = signal(false); 
+  savingComment = signal(false);
+
+  @ViewChild('fragmentText') fragmentText?: ElementRef<HTMLElement>;
 
   private lastCommentsKey = '';
 
@@ -111,14 +111,6 @@ export class FragmentCardComponent
       command: () => this.delete.emit(this.fragment.id),
     },
   ];
-
-  @Input() forceExpanded: boolean = false;
-
-  @Input() expandTrigger: string | null = null;
-
-  @Input() scrollToComment: string | null = null;
-
-  @Input() tags: Array<{ id: string; target: TTagLinkTarget }> = [];
 
   constructor(private highlighter: AnnotationHighlighterService) {}
 
@@ -146,7 +138,7 @@ export class FragmentCardComponent
     }
 
     if (changes['scrollToComment'] && this.scrollToComment) {
-      const belongs = this.comments.some((c) => c.id === this.scrollToComment);
+      const belongs = this.comments.some((x) => x.id === this.scrollToComment);
       if (belongs) {
         setTimeout(() => {
           this.highlighter.scrollToAnnotation(this.scrollToComment!);
@@ -158,8 +150,6 @@ export class FragmentCardComponent
   ngOnDestroy(): void {
     this.highlighter.clear();
   }
-
-  // ---------- done / review ----------
 
   onToggleDone(done: boolean): void {
     this.toggleDone.emit({ fragmentId: this.fragment.id, done });
@@ -173,8 +163,6 @@ export class FragmentCardComponent
     this.isExpanded.update((v) => !v);
     setTimeout(() => this.applyHighlight(), 0);
   }
-
-  // ---------- edit ----------
 
   startEdit(): void {
     this.editTitle.set(this.fragment.title);
@@ -211,14 +199,10 @@ export class FragmentCardComponent
     if (days < 7) return `${days} дн. назад`;
     return new Date(timestamp).toLocaleDateString('ru-RU');
   }
-  
-  // ---------- indicators / context ----------
 
   onIndicatorClick(): void {
     this.openContext.emit({ fragmentId: this.fragment.id });
   }
-
-  // ---------- annotation (comment to fragment) ----------
 
   startAddComment(): void {
     this.newCommentText.set('');
@@ -250,14 +234,11 @@ export class FragmentCardComponent
     this.cancelAddComment();
   }
 
-  // ---------- highlight / popup ----------
-
   onCardMouseMove(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     if (
       target.closest('.fragment-footer') ||
       target.closest('.fragment-header') ||
-      target.closest('.annotation-popup') ||
       target.closest('.edit-form') ||
       target.closest('.fragment-indicators')
     ) {
@@ -281,60 +262,46 @@ export class FragmentCardComponent
     }
 
     const commentIds = this.highlighter.getCommentIdsAt(event.clientX, event.clientY);
-    if (commentIds.length > 0) {
-      this.popup.set({ x: event.clientX, y: event.clientY, commentIds });
-      return;
-    }
-
     const tagIds = this.highlighter.getTagIdsAt(event.clientX, event.clientY);
-    if (tagIds.length > 0) {
-      const tag = this.tags.find((t) => tagIds.includes(t.id));
-      if (tag && tag.target.type === 'fragment-range') {
-        this.openContext.emit({
-          fragmentId: this.fragment.id,
-          range: {
-            start: tag.target.start,
-            end: tag.target.end,
-            quote: tag.target.quote,
-          },
-        });
-      }
+
+    if (commentIds.length === 0 && tagIds.length === 0) {
+      this.toggleExpand();
       return;
     }
 
-    if (this.popup()) {
-        this.closePopup();
-        return;
-      }
-      this.toggleExpand();
-  }
+    // определяем диапазон для контекста: приоритет у комментария
+    let range: { start: number; end: number; quote: string } | null = null;
 
-  closePopup(): void {
-    this.popup.set(null);
-  }
-
-  selectFromPopup(commentId: string): void {
-    this.closePopup();
-    const c = this.comments.find((x) => x.id === commentId);
-    if (!c) return;
-    if (c.target.type === 'fragment-range') {
-      this.openContext.emit({
-        fragmentId: this.fragment.id,
-        range: {
+    if (commentIds.length > 0) {
+      const c = this.comments.find((x) => x.id === commentIds[0]);
+      if (c && c.target.type === 'fragment-range') {
+        range = {
           start: c.target.start,
           end: c.target.end,
           quote: c.target.quote,
-        },
+        };
+      }
+    }
+
+    if (!range && tagIds.length > 0) {
+      const t = this.tags.find((x) => x.id === tagIds[0]);
+      if (t && t.target.type === 'fragment-range') {
+        range = {
+          start: t.target.start,
+          end: t.target.end,
+          quote: t.target.quote,
+        };
+      }
+    }
+
+    if (range) {
+      this.openContext.emit({
+        fragmentId: this.fragment.id,
+        range,
+        anchorCommentIds: commentIds,
+        anchorTagIds: tagIds,
       });
     }
-  }
-
-  getCommentById(id: string): Comment | undefined {
-    return this.comments.find((c) => c.id === id);
-  }
-
-  getAuthorName(authorId: string): string {
-    return this.profiles.get(authorId)?.displayName ?? 'Неизвестный';
   }
 
   private commentsKey(comments: Comment[]): string {
@@ -345,29 +312,4 @@ export class FragmentCardComponent
     const el = this.fragmentText?.nativeElement;
     if (el) this.highlighter.highlight(el, this.comments, this.tags);
   }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.popup()) return;
-    const target = event.target as HTMLElement;
-    if (target.closest('.annotation-popup')) return;
-    if (target.closest('.fragment-text')) return;
-    this.closePopup();
-  }
-
-  // getCommentIdsAt(x: number, y: number): string[] {
-  //   const result: string[] = [];
-  //   for (const [id, range] of this.commentRanges.entries()) {
-  //     if (this.rectsContainPoint(range, x, y)) result.push(id);
-  //   }
-  //   return result;
-  // }
-
-  // getTagIdsAt(x: number, y: number): string[] {
-  //   const result: string[] = [];
-  //   for (const [id, range] of this.tagRanges.entries()) {
-  //     if (this.rectsContainPoint(range, x, y)) result.push(id);
-  //   }
-  //   return result;
-  // }
 }

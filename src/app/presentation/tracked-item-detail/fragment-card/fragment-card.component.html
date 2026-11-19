@@ -88,28 +88,7 @@
         }
       </div>
     }
-
-    @if (popup(); as p) {
-      <div
-        class="annotation-popup"
-        [style.left.px]="p.x"
-        [style.top.px]="p.y"
-        (click)="$event.stopPropagation()"
-      >
-        <div class="popup-header">
-          <span>Аннотации</span>
-          <button class="popup-close" (click)="closePopup()">×</button>
-        </div>
-        @for (id of p.commentIds; track id) {
-          @if (getCommentById(id); as c) {
-            <div class="popup-item" (click)="selectFromPopup(c.id)">
-              <span class="popup-text">{{ c.text }}</span>
-              <span class="popup-author">{{ getAuthorName(c.authorId) }}</span>
-            </div>
-          }
-        }
-      </div>
-    }
+    
   } @else {
     <div class="edit-form">
       <input

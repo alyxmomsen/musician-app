@@ -221,19 +221,18 @@ export class TrackedItemDetailComponent implements OnInit {
     if (ctx.type === 'fragment') {
       return all.filter(
         (c) =>
-          c.target.type === 'fragment' &&
-          c.target.fragmentId === ctx.fragmentId
+          (c.target.type === 'fragment' &&
+            c.target.fragmentId === ctx.fragmentId) ||
+          (c.target.type === 'fragment-range' &&
+            c.target.fragmentId === ctx.fragmentId)
       );
     }
 
     if (ctx.type === 'fragment-range') {
-      return all.filter(
-        (c) =>
-          c.target.type === 'fragment-range' &&
-          c.target.fragmentId === ctx.fragmentId &&
-          c.target.start === ctx.start &&
-          c.target.end === ctx.end
-      );
+      // только те, что были в точке клика
+      if (ctx.anchorCommentIds.length === 0) return [];
+      const set = new Set(ctx.anchorCommentIds);
+      return all.filter((c) => set.has(c.id));
     }
 
     return [];
@@ -254,21 +253,19 @@ export class TrackedItemDetailComponent implements OnInit {
       return all
         .filter(
           (t) =>
-            t.target.type === 'fragment' &&
-            t.target.fragmentId === ctx.fragmentId
+            (t.target.type === 'fragment' &&
+              t.target.fragmentId === ctx.fragmentId) ||
+            (t.target.type === 'fragment-range' &&
+              t.target.fragmentId === ctx.fragmentId)
         )
         .map((t) => t.tag);
     }
 
     if (ctx.type === 'fragment-range') {
+      if (ctx.anchorTagIds.length === 0) return [];
+      const set = new Set(ctx.anchorTagIds);
       return all
-        .filter(
-          (t) =>
-            t.target.type === 'fragment-range' &&
-            t.target.fragmentId === ctx.fragmentId &&
-            t.target.start === ctx.start &&
-            t.target.end === ctx.end
-        )
+        .filter((t) => set.has(t.linkId))
         .map((t) => t.tag);
     }
 
@@ -747,6 +744,8 @@ export class TrackedItemDetailComponent implements OnInit {
   openFragmentContext(event: {
     fragmentId: string;
     range?: { start: number; end: number; quote: string };
+    anchorCommentIds?: string[];
+    anchorTagIds?: string[];
   }): void {
     if (event.range) {
       this.selectedContext.set({
@@ -755,6 +754,8 @@ export class TrackedItemDetailComponent implements OnInit {
         start: event.range.start,
         end: event.range.end,
         quote: event.range.quote,
+        anchorCommentIds: event.anchorCommentIds ?? [],
+        anchorTagIds: event.anchorTagIds ?? [],
       });
     } else {
       this.selectedContext.set({
