@@ -138,12 +138,17 @@ export class FragmentCardComponent
     }
 
     if (changes['scrollToComment'] && this.scrollToComment) {
-      const belongs = this.comments.some((x) => x.id === this.scrollToComment);
-      if (belongs) {
+      const belongs = this.comments.some((c) => c.id === this.scrollToComment);
+      if (!belongs) return;
+
+      // Ensure expanded before measuring ranges
+      this.isExpanded.set(true);
+      setTimeout(() => {
+        this.applyHighlight();
         setTimeout(() => {
           this.highlighter.scrollToAnnotation(this.scrollToComment!);
         }, 50);
-      }
+      }, 0);
     }
   }
 

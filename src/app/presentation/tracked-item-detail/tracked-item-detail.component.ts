@@ -921,17 +921,26 @@ export class TrackedItemDetailComponent implements OnInit {
   }
 
   onPanelCommentClick(comment: Comment): void {
-    if (comment.target.type === 'fragment-range') {
-      this.scrollToComment.set(comment.id);
-      setTimeout(() => this.scrollToComment.set(null), 100);
-    } else if (comment.target.type === 'fragment') {
-      const fragmentId = comment.target.fragmentId;
-      this.expandTrigger.set(fragmentId);
-      setTimeout(() => {
-        this.scrollToFragment(fragmentId);
-        this.expandTrigger.set(null);
-      }, 50);
+    const target = comment.target;
+    if (target.type !== 'fragment-range' && target.type !== 'fragment') {
+      return;
     }
+
+    const fragmentId = target.fragmentId;
+
+    // 1. Always expand first
+    this.expandTrigger.set(fragmentId);
+
+    // 2. After DOM/highlight update — scroll
+    setTimeout(() => {
+      if (target.type === 'fragment-range') {
+        this.scrollToComment.set(comment.id);
+        setTimeout(() => this.scrollToComment.set(null), 150);
+      } else {
+        this.scrollToFragment(fragmentId);
+      }
+      this.expandTrigger.set(null);
+    }, 80);
   }
 
   tagsForFragment(fragmentId: string): Array<{ id: string; target: TTagLinkTarget }> {

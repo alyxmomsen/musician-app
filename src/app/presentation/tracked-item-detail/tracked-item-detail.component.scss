@@ -169,6 +169,13 @@
   min-height: 0;
 }
 
+app-context-panel {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  display: block;
+}
+
 .center-panel {
   overflow-y: auto;
   padding: 1.5rem 2rem;
