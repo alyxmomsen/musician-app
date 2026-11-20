@@ -34,14 +34,13 @@
             <div class="comment-text">{{ comment.text }}</div>
             @if (getTagsForComment(comment.id).length > 0) {
               <div class="comment-tags">
+                <span class="comment-tags-label">к заметке:</span>
                 @for (tag of getTagsForComment(comment.id); track tag.id) {
                   <span
                     class="tag-chip small"
-                    [pTooltip]="tag.description || ''"
-                    [tooltipDisabled]="!tag.description"
-                  >
-                    {{ tag.originalText }}
-                  </span>
+                    (click)="onTagClick(tag, $event)"
+                    ...
+                  >{{ tag.originalText }}</span>
                 }
               </div>
             }
