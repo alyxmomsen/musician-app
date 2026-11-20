@@ -50,6 +50,9 @@ export class ContextPanelComponent {
 
   @Output() commentClick = new EventEmitter<Comment>();
 
+  commentsOpen = signal(true);
+  tagsOpen = signal(true);
+
   onClose(): void {
     this.close.emit();
   }
@@ -112,5 +115,17 @@ export class ContextPanelComponent {
 
   onCommentClick(comment: Comment): void {
     this.commentClick.emit(comment);
+  }
+
+  ngOnChanges(): void {
+    // optional: keep user toggles; or reset when context changes
+  }
+
+  toggleComments(): void {
+    this.commentsOpen.update((v) => !v);
+  }
+
+  toggleTags(): void {
+    this.tagsOpen.update((v) => !v);
   }
 }

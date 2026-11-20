@@ -60,6 +60,8 @@ export class TagChipsComponent implements OnInit {
 
   @Output() changed = new EventEmitter<void>();
 
+  @Output() tagClick = new EventEmitter<{ id: string; text: string }>();
+
   constructor(
     private getTags: GetTagsForTargetUseCase,
     private addTag: AddTagUseCase,
@@ -169,5 +171,13 @@ export class TagChipsComponent implements OnInit {
     } finally {
       this.savingDescription.set(false);
     }
+  }
+
+  onTagClick(tag: HashTag, event: Event): void {
+    event.stopPropagation();
+    this.tagClick.emit({
+      id: tag.id,
+      text: tag.normalizedText || tag.originalText,
+    });
   }
 }

@@ -19,68 +19,96 @@
       <div class="context-empty">Нет комментариев и тегов</div>
     }
 
-    @if (comments.length > 0) {
+        @if (comments.length > 0) {
       <div class="context-section">
-        <div class="section-title">Комментарии</div>
-        @for (comment of comments; track comment.id) {
-          <div class="context-comment" (click)="onCommentClick(comment)">
-            <div class="comment-header">
-              <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
-              <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
-            </div>
-            @if (comment.target.type === 'fragment-range' && comment.target.quote) {
-              <div class="comment-quote">«{{ comment.target.quote }}»</div>
-            }
-            <div class="comment-text">{{ comment.text }}</div>
-            @if (getTagsForComment(comment.id).length > 0) {
-              <div class="comment-tags">
-                <span class="comment-tags-label">к заметке:</span>
-                @for (tag of getTagsForComment(comment.id); track tag.id) {
-                  <span
-                    class="tag-chip small"
-                    (click)="onTagClick(tag, $event)"
-                    ...
-                  >{{ tag.originalText }}</span>
-                }
+        <button
+          type="button"
+          class="section-title section-toggle"
+          (click)="toggleComments()"
+        >
+          <i
+            class="pi"
+            [class.pi-chevron-down]="commentsOpen()"
+            [class.pi-chevron-right]="!commentsOpen()"
+          ></i>
+          Комментарии ({{ comments.length }})
+        </button>
+        @if (commentsOpen()) {
+          @for (comment of comments; track comment.id) {
+            <div class="context-comment" (click)="onCommentClick(comment)">
+              <div class="comment-header">
+                <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
+                <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
               </div>
-            }
-            <div class="comment-actions">
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                severity="danger"
-                size="small"
-                (onClick)="onDeleteComment(comment.id); $event.stopPropagation()"
-              />
+              @if (comment.target.type === 'fragment-range' && comment.target.quote) {
+                <div class="comment-quote">«{{ comment.target.quote }}»</div>
+              }
+              <div class="comment-text">{{ comment.text }}</div>
+              @if (getTagsForComment(comment.id).length > 0) {
+                <div class="comment-tags">
+                  <span class="comment-tags-label">к заметке:</span>
+                  @for (tag of getTagsForComment(comment.id); track tag.id) {
+                    <span
+                      class="tag-chip small"
+                      [pTooltip]="tag.description || ''"
+                      [tooltipDisabled]="!tag.description"
+                    >
+                      {{ tag.originalText }}
+                    </span>
+                  }
+                </div>
+              }
+              <div class="comment-actions">
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  size="small"
+                  (onClick)="onDeleteComment(comment.id); $event.stopPropagation()"
+                />
+              </div>
             </div>
-          </div>
+          }
         }
       </div>
     }
 
     @if (tags.length > 0) {
       <div class="context-section">
-        <div class="section-title">Теги</div>
-        <div class="context-tags">
-          @for (tag of tags; track tag.id) {
-            <span
-              class="tag-chip"
-              [pTooltip]="tag.description || 'Найти всё с этим тегом'"
-              [tooltipDisabled]="false"
-              (click)="onTagClick(tag, $event)"
-              style="cursor: pointer"
-            >
-              {{ tag.originalText }}
-              <button
-                type="button"
-                class="tag-remove"
-                (click)="onRemoveTag(tag.id); $event.stopPropagation()"
+        <button
+          type="button"
+          class="section-title section-toggle"
+          (click)="toggleTags()"
+        >
+          <i
+            class="pi"
+            [class.pi-chevron-down]="tagsOpen()"
+            [class.pi-chevron-right]="!tagsOpen()"
+          ></i>
+          Теги ({{ tags.length }})
+        </button>
+        @if (tagsOpen()) {
+          <div class="context-tags">
+            @for (tag of tags; track tag.id) {
+              <span
+                class="tag-chip"
+                [pTooltip]="tag.description || 'Найти всё с этим тегом'"
+                [tooltipDisabled]="false"
+                (click)="onTagClick(tag, $event)"
+                style="cursor: pointer"
               >
-                <i class="pi pi-times"></i>
-              </button>
-            </span>
-          }
-        </div>
+                {{ tag.originalText }}
+                <button
+                  type="button"
+                  class="tag-remove"
+                  (click)="onRemoveTag(tag.id); $event.stopPropagation()"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </span>
+            }
+          </div>
+        }
       </div>
     }
 

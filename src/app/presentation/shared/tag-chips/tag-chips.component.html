@@ -2,15 +2,17 @@
   @for (tag of tags(); track tag.id) {
     <span
       class="tag-chip"
-      [pTooltip]="tag.description || ''"
-      [tooltipDisabled]="!tag.description"
+      [pTooltip]="tag.description || 'Найти всё с этим тегом'"
+      [tooltipDisabled]="false"
       tooltipPosition="top"
+      style="cursor: pointer"
+      (click)="onTagClick(tag, $event)"
     >
       <span class="tag-text">{{ tag.originalText }}</span>
       <button
         type="button"
         class="tag-remove"
-        (click)="removeTagById(tag.id)"
+        (click)="removeTagById(tag.id); $event.stopPropagation()"
       >
         <i class="pi pi-times"></i>
       </button>
@@ -18,7 +20,7 @@
         <button
           type="button"
           class="tag-edit"
-          (click)="startEditDescription(tag)"
+          (click)="startEditDescription(tag); $event.stopPropagation()"
           pTooltip="Описание"
         >
           <i class="pi pi-pencil"></i>
