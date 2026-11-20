@@ -3,6 +3,7 @@ export interface TrackedItemSummaryDto {
   artistName: string;
   title: string;
   progress: number;
+  matchedTags?: string[];
 }
 
 export interface TrackedItemTextFragmentDto {

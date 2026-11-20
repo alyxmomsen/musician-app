@@ -7,6 +7,20 @@ export interface TrackedItemsPage {
   limit: number;
 }
 
+export interface TrackedItemSearchParams {
+  q?: string;
+  artist?: string;
+  tags?: string[];
+  tagIds?: string[];
+  page: number;
+  limit: number;
+}
+
+export interface TrackedItemSearchResult extends TrackedItemsPage {
+  /** Tag labels that matched the filter, per item id — optional UI hint */
+  matchedTagsByItemId?: Record<string, string[]>;
+}
+
 export interface TTrackedItemFragmentInput {
   text: string;
   title: string;
@@ -15,6 +29,7 @@ export interface TTrackedItemFragmentInput {
 
 export interface TrackedItemRepositoryPort {
   getPage(page: number, limit: number): Promise<TrackedItemsPage>;
+  search(params: TrackedItemSearchParams): Promise<TrackedItemSearchResult>;
   getById(id: string): Promise<TrackedItem>;
   create(
     artistName: string,

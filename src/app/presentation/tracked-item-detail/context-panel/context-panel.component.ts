@@ -37,6 +37,8 @@ export class ContextPanelComponent {
   @Output() close = new EventEmitter<void>();
   @Output() deleteComment = new EventEmitter<string>();
   @Output() removeTag = new EventEmitter<string>();
+  /** Navigate to list filtered by this tag */
+  @Output() tagClick = new EventEmitter<{ id: string; text: string }>();
   @Output() addAnnotation = new EventEmitter<{
     comment: string;
     tags: string[];
@@ -58,6 +60,11 @@ export class ContextPanelComponent {
 
   onRemoveTag(tagId: string): void {
     this.removeTag.emit(tagId);
+  }
+
+  onTagClick(tag: HashTag, event: Event): void {
+    event.stopPropagation();
+    this.tagClick.emit({ id: tag.id, text: tag.normalizedText || tag.originalText });
   }
 
   getAuthorName(authorId: string): string {

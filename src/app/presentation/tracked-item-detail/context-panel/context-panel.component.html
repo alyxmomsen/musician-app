@@ -28,6 +28,9 @@
               <span class="comment-author">{{ getAuthorName(comment.authorId) }}</span>
               <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
             </div>
+            @if (comment.target.type === 'fragment-range' && comment.target.quote) {
+              <div class="comment-quote">«{{ comment.target.quote }}»</div>
+            }
             <div class="comment-text">{{ comment.text }}</div>
             @if (getTagsForComment(comment.id).length > 0) {
               <div class="comment-tags">
@@ -63,14 +66,16 @@
           @for (tag of tags; track tag.id) {
             <span
               class="tag-chip"
-              [pTooltip]="tag.description || ''"
-              [tooltipDisabled]="!tag.description"
+              [pTooltip]="tag.description || 'Найти всё с этим тегом'"
+              [tooltipDisabled]="false"
+              (click)="onTagClick(tag, $event)"
+              style="cursor: pointer"
             >
               {{ tag.originalText }}
               <button
                 type="button"
                 class="tag-remove"
-                (click)="onRemoveTag(tag.id)"
+                (click)="onRemoveTag(tag.id); $event.stopPropagation()"
               >
                 <i class="pi pi-times"></i>
               </button>
@@ -95,14 +100,14 @@
           rows="3"
           [ngModel]="newCommentText()"
           (ngModelChange)="newCommentText.set($event)"
-          placeholder="Комментарий (опционально)"
+          placeholder="Комментарий к выделенному тексту"
         ></textarea>
         <input
           pInputText
           type="text"
           [ngModel]="newAnnotationTags()"
           (ngModelChange)="newAnnotationTags.set($event)"
-          placeholder="Теги через пробел (опционально)"
+          placeholder="Теги к тексту (через пробел)"
           class="annotation-tags-input"
         />
         <div class="add-actions">

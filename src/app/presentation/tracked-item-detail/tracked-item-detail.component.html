@@ -179,6 +179,7 @@
         (close)="closeContext()"
         (deleteComment)="onPanelDeleteComment($event)"
         (removeTag)="onPanelRemoveTag($event)"
+        (tagClick)="onTagSearch($event)"
         (addAnnotation)="onPanelAddAnnotation($event)"
         (commentClick)="onPanelCommentClick($event)"
       />
@@ -209,7 +210,7 @@
           rows="3"
           [ngModel]="newCommentText()"
           (ngModelChange)="newCommentText.set($event)"
-          placeholder="Комментарий (опционально)"
+          placeholder="Комментарий к выделенному тексту"
         ></textarea>
 
         <input
@@ -217,7 +218,7 @@
           type="text"
           [ngModel]="newAnnotationTags()"
           (ngModelChange)="newAnnotationTags.set($event)"
-          placeholder="Теги через пробел (опционально)"
+          placeholder="Теги к тексту (через пробел)"
           class="annotation-tags-input"
         />
 
@@ -252,7 +253,7 @@
           rows="3"
           [ngModel]="newItemCommentText()"
           (ngModelChange)="newItemCommentText.set($event)"
-          placeholder="Комментарий (опционально)"
+          placeholder="Комментарий к выделенному тексту"
         ></textarea>
 
         <input
@@ -260,7 +261,7 @@
           type="text"
           [ngModel]="newItemCommentTags()"
           (ngModelChange)="newItemCommentTags.set($event)"
-          placeholder="Теги через пробел (опционально)"
+          placeholder="Теги к тексту (через пробел)"
           class="annotation-tags-input"
         />
 

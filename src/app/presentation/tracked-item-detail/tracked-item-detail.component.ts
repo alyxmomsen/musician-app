@@ -195,15 +195,42 @@ export class TrackedItemDetailComponent implements OnInit {
         const fragment = it?.fragments.find((f) => f.id === ctx.fragmentId);
         return fragment?.title?.trim() || 'Фрагмент';
       }
-      case 'fragment-range':
+      case 'fragment-range': {
+        const nComments = ctx.anchorCommentIds.length;
+        const nTags = ctx.anchorTagIds.length;
+        if (nComments + nTags > 1) {
+          return 'Аннотации в этом месте';
+        }
         return 'Диапазон текста';
+      }
     }
   });
 
   contextSubtitle = computed<string | null>(() => {
     const ctx = this.selectedContext();
-    if (ctx?.type === 'fragment-range') return ctx.quote;
-    return null;
+    if (ctx?.type !== 'fragment-range') return null;
+
+    const nComments = ctx.anchorCommentIds.length;
+    const nTags = ctx.anchorTagIds.length;
+
+    // Several anchors at the click point — don't pretend there's one quote
+    if (nComments + nTags > 1) {
+      const parts: string[] = [];
+      if (nComments > 0) {
+        parts.push(
+          `${nComments} ${nComments === 1 ? 'комментарий' : nComments < 5 ? 'комментария' : 'комментариев'}`
+        );
+      }
+      if (nTags > 0) {
+        parts.push(
+          `${nTags} ${nTags === 1 ? 'тег' : nTags < 5 ? 'тега' : 'тегов'}`
+        );
+      }
+      return parts.join(' · ');
+    }
+
+    // Single annotation — show its quote when available
+    return ctx.quote || null;
   });
 
   commentTags = signal<Map<string, HashTag[]>>(new Map());
@@ -915,6 +942,15 @@ export class TrackedItemDetailComponent implements OnInit {
           (t.target.type === 'fragment-range' && t.target.fragmentId === fragmentId)
       )
       .map((t) => ({ id: t.linkId, target: t.target }));
+  }
+
+
+  onTagSearch(event: { id: string; text: string }): void {
+    const tag = (event.text || '').trim();
+    if (!tag) return;
+    this.router.navigate(['/'], {
+      queryParams: { tags: tag },
+    });
   }
 
 }

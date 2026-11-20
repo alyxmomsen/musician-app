@@ -4,6 +4,8 @@ import { firstValueFrom } from 'rxjs';
 import {
   TrackedItemRepositoryPort,
   TrackedItemsPage,
+  TrackedItemSearchParams,
+  TrackedItemSearchResult,
   TTrackedItemFragmentInput,
 } from '../../domain/tracked-item/ports/tracked-item.repository.port';
 import { TrackedItem } from '../../domain/tracked-item/models/tracked-item.entity';
@@ -30,6 +32,46 @@ export class HttpTrackedItemRepository implements TrackedItemRepositoryPort {
       total: dto.total,
       page: dto.page,
       limit: dto.limit,
+    };
+  }
+
+  async search(params: TrackedItemSearchParams): Promise<TrackedItemSearchResult> {
+    let httpParams = new HttpParams()
+      .set('page', params.page)
+      .set('limit', params.limit);
+
+    if (params.q?.trim()) {
+      httpParams = httpParams.set('q', params.q.trim());
+    }
+    if (params.artist?.trim()) {
+      httpParams = httpParams.set('artist', params.artist.trim());
+    }
+    if (params.tags && params.tags.length > 0) {
+      httpParams = httpParams.set('tags', params.tags.join(','));
+    }
+    if (params.tagIds && params.tagIds.length > 0) {
+      httpParams = httpParams.set('tagIds', params.tagIds.join(','));
+    }
+
+    const dto = await firstValueFrom(
+      this.http.get<TrackedItemsPageDto>(`${this.apiUrl}/search`, {
+        params: httpParams,
+      })
+    );
+
+    const matchedTagsByItemId: Record<string, string[]> = {};
+    for (const s of dto.items) {
+      if (s.matchedTags && s.matchedTags.length > 0) {
+        matchedTagsByItemId[s.id] = s.matchedTags;
+      }
+    }
+
+    return {
+      items: dto.items.map((s) => this.summaryToEntity(s)),
+      total: dto.total,
+      page: dto.page,
+      limit: dto.limit,
+      matchedTagsByItemId,
     };
   }
 

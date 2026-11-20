@@ -8,12 +8,68 @@
     />
   </header>
 
+  <div class="search-bar">
+    <span class="p-input-icon-left search-input-wrap">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        class="search-input"
+        placeholder="Поиск по артисту, названию, тексту…"
+        [ngModel]="searchInput()"
+        (ngModelChange)="onSearchInput($event)"
+      />
+    </span>
+
+    @if (hasActiveFilters()) {
+      <p-button
+        label="Сбросить"
+        icon="pi pi-times"
+        severity="secondary"
+        [text]="true"
+        size="small"
+        (onClick)="clearFilters()"
+      />
+    }
+  </div>
+
+  @if (selectedTags().length > 0) {
+    <div class="filter-chips">
+      @for (tag of selectedTags(); track tag) {
+        <p-chip
+          [label]="tag"
+          [removable]="true"
+          (onRemove)="removeTagFilter(tag)"
+        />
+      }
+    </div>
+  }
+
+  @if (hasActiveFilters() && !loading()) {
+    <div class="search-meta">
+      Найдено: {{ total() }}
+    </div>
+  }
+
   @if (loading()) {
     <p-progressbar mode="indeterminate" />
   }
 
   @if (!loading() && items().length === 0) {
-    <div class="empty">Здесь пока ничего нет</div>
+    <div class="empty">
+      @if (hasActiveFilters()) {
+        <p>Ничего не найдено</p>
+        <p-button
+          label="Сбросить фильтры"
+          icon="pi pi-times"
+          severity="secondary"
+          [text]="true"
+          (onClick)="clearFilters()"
+        />
+      } @else {
+        Здесь пока ничего нет
+      }
+    </div>
   }
 
   <ul class="cards">
@@ -26,6 +82,15 @@
             <span class="title">{{ item.title }}</span>
           </div>
           <p-progressbar [value]="item.progress" [showValue]="true" />
+          @if (matchedTagsByItemId()[item.id]; as matched) {
+            @if (matched.length > 0) {
+              <div class="card-matched-tags">
+                @for (t of matched; track t) {
+                  <span class="matched-tag">{{ t }}</span>
+                }
+              </div>
+            }
+          }
         </div>
 
         <button
