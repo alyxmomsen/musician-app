@@ -33,22 +33,23 @@ export class ContextPanelComponent {
   @Input() commentTags: Map<string, HashTag[]> = new Map();
   @Input() tags: HashTag[] = [];
   @Input() profiles: Map<string, TUserProfile> = new Map();
+  @Input() currentUserId: string | null = null;
 
   @Output() close = new EventEmitter<void>();
   @Output() deleteComment = new EventEmitter<string>();
   @Output() removeTag = new EventEmitter<string>();
-  /** Navigate to list filtered by this tag */
   @Output() tagClick = new EventEmitter<{ id: string; text: string }>();
-  @Output() addAnnotation = new EventEmitter<{
-    comment: string;
-    tags: string[];
-  }>();
+  @Output() commentClick = new EventEmitter<Comment>();
+  @Output() addAnnotation = new EventEmitter<{ comment: string; tags: string[] }>();
+  @Output() updateComment = new EventEmitter<{ id: string; text: string }>();
 
   adding = signal(false);
   newCommentText = signal('');
   newAnnotationTags = signal('');
 
-  @Output() commentClick = new EventEmitter<Comment>();
+  editingCommentId = signal<string | null>(null);
+  editCommentText = signal('');
+  savingEdit = signal(false);
 
   commentsOpen = signal(true);
   tagsOpen = signal(true);
@@ -117,15 +118,40 @@ export class ContextPanelComponent {
     this.commentClick.emit(comment);
   }
 
-  ngOnChanges(): void {
-    // optional: keep user toggles; or reset when context changes
-  }
-
   toggleComments(): void {
     this.commentsOpen.update((v) => !v);
   }
 
   toggleTags(): void {
     this.tagsOpen.update((v) => !v);
+  }
+
+  canEdit(comment: Comment): boolean {
+    return !!this.currentUserId && comment.authorId === this.currentUserId;
+  }
+
+  startEditComment(comment: Comment, event: Event): void {
+    event.stopPropagation();
+    this.editingCommentId.set(comment.id);
+    this.editCommentText.set(comment.text);
+  }
+
+  cancelEditComment(event?: Event): void {
+    event?.stopPropagation();
+    this.editingCommentId.set(null);
+    this.editCommentText.set('');
+  }
+
+  submitEditComment(event: Event): void {
+    event.stopPropagation();
+    const id = this.editingCommentId();
+    const text = this.editCommentText().trim();
+    if (!id || !text) return;
+
+    this.savingEdit.set(true);
+    this.updateComment.emit({ id, text });
+    this.editingCommentId.set(null);
+    this.editCommentText.set('');
+    this.savingEdit.set(false);
   }
 }

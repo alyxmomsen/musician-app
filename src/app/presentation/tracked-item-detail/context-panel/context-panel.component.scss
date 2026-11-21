@@ -226,3 +226,27 @@
   color: #999;
   margin-right: 0.25rem;
 }
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+
+  textarea {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+  }
+}
+
+.comment-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}

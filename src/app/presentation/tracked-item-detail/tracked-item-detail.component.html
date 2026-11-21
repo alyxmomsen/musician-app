@@ -177,12 +177,14 @@
         [commentTags]="commentTags()"
         [tags]="contextTags()"
         [profiles]="profiles()"
+        [currentUserId]="currentUserId()"
         (close)="closeContext()"
         (deleteComment)="onPanelDeleteComment($event)"
         (removeTag)="onPanelRemoveTag($event)"
-        (tagClick)="onTagSearch($event)"
         (addAnnotation)="onPanelAddAnnotation($event)"
         (commentClick)="onPanelCommentClick($event)"
+        (tagClick)="onPanelTagClick($event)"
+        (updateComment)="onPanelUpdateComment($event)"
       />
     </div>
   }

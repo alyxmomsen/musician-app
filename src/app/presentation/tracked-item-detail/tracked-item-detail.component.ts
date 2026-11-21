@@ -65,6 +65,8 @@ import { RemoveTagUseCase } from '../../application/tag/use-cases/remove-tag.use
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { GetAllTagsUseCase } from '../../application/tag/use-cases/get-all-tags.use-case';
 
+import { UpdateCommentUseCase } from '../../application/comment/use-cases/update-comment.use-case';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -106,6 +108,7 @@ import { GetAllTagsUseCase } from '../../application/tag/use-cases/get-all-tags.
     GetTagsForCommentsUseCase,
     RemoveTagUseCase,
     GetAllTagsUseCase,
+    UpdateCommentUseCase,
   ],
 })
 export class TrackedItemDetailComponent implements OnInit {
@@ -311,6 +314,8 @@ export class TrackedItemDetailComponent implements OnInit {
 
   scrollToComment = signal<string | null>(null);
 
+  currentUserId = computed<string | null>(() => this.auth.user()?.id ?? null);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -336,6 +341,8 @@ export class TrackedItemDetailComponent implements OnInit {
     private removeTag: RemoveTagUseCase,
 
     private getAllTags: GetAllTagsUseCase,
+
+    private updateComment: UpdateCommentUseCase,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -1002,6 +1009,23 @@ export class TrackedItemDetailComponent implements OnInit {
     }
     input.value = '';
     this.tagSuggestions.set([]);
+  }
+
+  async onPanelUpdateComment(event: { id: string; text: string }): Promise<void> {
+    try {
+      const updated = await this.updateComment.execute(event.id, event.text);
+      this.comments.update((list) =>
+        list.map((c) => (c.id === updated.id ? updated : c))
+      );
+    } catch (err) {
+      console.error('Update comment failed:', err);
+    }
+  }
+
+  onPanelTagClick(event: { id: string; text: string }): void {
+    this.router.navigate(['/'], {
+      queryParams: { tags: event.text },
+    });
   }
 
 }
