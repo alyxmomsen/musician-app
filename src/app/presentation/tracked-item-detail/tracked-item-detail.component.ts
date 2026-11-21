@@ -62,6 +62,9 @@ import { GetTagsForCommentsUseCase } from '../../application/tag/use-cases/get-t
 
 import { RemoveTagUseCase } from '../../application/tag/use-cases/remove-tag.use-case';
 
+import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { GetAllTagsUseCase } from '../../application/tag/use-cases/get-all-tags.use-case';
+
 @Component({
   selector: 'app-tracked-item-detail',
   standalone: true,
@@ -83,6 +86,8 @@ import { RemoveTagUseCase } from '../../application/tag/use-cases/remove-tag.use
 
     MenuModule,
     TooltipModule,
+
+    AutoComplete,
   ],
   templateUrl: './tracked-item-detail.component.html',
   styleUrls: ['./tracked-item-detail.component.scss'],
@@ -100,6 +105,7 @@ import { RemoveTagUseCase } from '../../application/tag/use-cases/remove-tag.use
     GetTagsForTrackedItemUseCase,
     GetTagsForCommentsUseCase,
     RemoveTagUseCase,
+    GetAllTagsUseCase,
   ],
 })
 export class TrackedItemDetailComponent implements OnInit {
@@ -131,7 +137,9 @@ export class TrackedItemDetailComponent implements OnInit {
 
   profiles = signal<Map<string, TUserProfile>>(new Map());
 
-  newAnnotationTags = signal('');
+  selectedAnnotationTags = signal<string[]>([]);
+  tagSuggestions = signal<string[]>([]);
+  private allTagLabels: string[] = [];
 
   showItemCommentDialog = signal(false);
   newItemCommentText = signal('');
@@ -326,6 +334,8 @@ export class TrackedItemDetailComponent implements OnInit {
     private getTagsForComments: GetTagsForCommentsUseCase,
 
     private removeTag: RemoveTagUseCase,
+
+    private getAllTags: GetAllTagsUseCase,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -348,6 +358,9 @@ export class TrackedItemDetailComponent implements OnInit {
 
       const tags = await this.getTagsForTrackedItem.execute(this.id);
       this.allTags.set(tags);
+
+      const catalog = await this.getAllTags.execute();
+      this.allTagLabels = catalog.map((t) => t.originalText);
 
       const authorIds = Array.from(new Set(comments.map((c) => c.authorId)));
       this.profiles.set(await this.profilesRepo.getByUserIds(authorIds));
@@ -572,24 +585,23 @@ export class TrackedItemDetailComponent implements OnInit {
     const pending = this.pendingSelection();
     if (!pending) return;
     this.newCommentText.set('');
-    this.newAnnotationTags.set('');
+    this.selectedAnnotationTags.set([]);
     this.showCommentDialog.set(true);
   }
 
   cancelCommentDialog(): void {
     this.showCommentDialog.set(false);
     this.newCommentText.set('');
-    this.newAnnotationTags.set('');
+    this.selectedAnnotationTags.set([]);
     this.pendingSelection.set(null);
     this.selectionService.clear();
   }
 
   async submitAnnotation(): Promise<void> {
     const comment = this.newCommentText().trim();
-    const tagsInput = this.newAnnotationTags().trim();
-    const tags = tagsInput.length > 0
-      ? tagsInput.split(/\s+/).filter((t) => t.length > 0)
-      : [];
+    const tags = this.selectedAnnotationTags()
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
 
     if (!comment && tags.length === 0) return;
 
@@ -624,7 +636,7 @@ export class TrackedItemDetailComponent implements OnInit {
       }
 
       this.cancelCommentDialog();
-      this.reloadTags();
+      await this.reloadTags();
 
       if (result.tags.length > 0) {
         await this.reloadCommentTags();
@@ -960,6 +972,36 @@ export class TrackedItemDetailComponent implements OnInit {
     this.router.navigate(['/'], {
       queryParams: { tags: tag },
     });
+  }
+
+  searchTagSuggestions(event: AutoCompleteCompleteEvent): void {
+    const q = (event.query || '').trim().toLowerCase();
+    const selected = new Set(
+      this.selectedAnnotationTags().map((t) => t.toLowerCase())
+    );
+    const source = this.allTagLabels.filter(
+      (label) => !selected.has(label.toLowerCase())
+    );
+    this.tagSuggestions.set(
+      q
+        ? source.filter((label) => label.toLowerCase().includes(q))
+        : source.slice(0, 20)
+    );
+  }
+
+  onTagInputKeydown(event: Event): void {
+    const e = event as KeyboardEvent;
+    if (e.key !== 'Enter') return;
+    const input = e.target as HTMLInputElement;
+    const value = (input?.value || '').trim();
+    if (!value) return;
+    e.preventDefault();
+    const cur = this.selectedAnnotationTags();
+    if (!cur.some((t) => t.toLowerCase() === value.toLowerCase())) {
+      this.selectedAnnotationTags.set([...cur, value]);
+    }
+    input.value = '';
+    this.tagSuggestions.set([]);
   }
 
 }

@@ -98,6 +98,7 @@
                 [fragment]="fragment"
                 [trackedItemId]="id"
                 [comments]="commentsForFragment(fragment.id)"
+                [tags]="tagsForFragment(fragment.id)"
                 [profiles]="profiles()"
                 [commentCount]="tocMap().get(fragment.id)?.commentCount ?? 0"
                 [tagCount]="tocMap().get(fragment.id)?.tagCount ?? 0"
@@ -213,13 +214,17 @@
           placeholder="Комментарий к выделенному тексту"
         ></textarea>
 
-        <input
-          pInputText
-          type="text"
-          [ngModel]="newAnnotationTags()"
-          (ngModelChange)="newAnnotationTags.set($event)"
-          placeholder="Теги к тексту (через пробел)"
-          class="annotation-tags-input"
+        <p-autocomplete
+          [ngModel]="selectedAnnotationTags()"
+          (ngModelChange)="selectedAnnotationTags.set($event)"
+          [suggestions]="tagSuggestions()"
+          (completeMethod)="searchTagSuggestions($event)"
+          [multiple]="true"
+          [forceSelection]="false"
+          placeholder="Теги к тексту"
+          inputStyleClass="annotation-tags-input"
+          styleClass="annotation-tags-ac"
+          (keydown)="onTagInputKeydown($event)"
         />
 
         <div class="comment-dialog-actions">
@@ -227,7 +232,7 @@
             label="Сохранить"
             icon="pi pi-check"
             [loading]="savingComment()"
-            [disabled]="!newCommentText().trim() && !newAnnotationTags().trim()"
+            [disabled]="!newCommentText().trim() && selectedAnnotationTags().length === 0"
             (onClick)="submitAnnotation()"
           />
           <p-button
